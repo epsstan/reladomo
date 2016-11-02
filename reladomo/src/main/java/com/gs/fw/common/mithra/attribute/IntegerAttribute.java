@@ -19,10 +19,7 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.collections.api.set.primitive.IntSet;
 import com.gs.collections.api.set.primitive.MutableIntSet;
 import com.gs.collections.impl.set.mutable.primitive.IntHashSet;
-import com.gs.fw.common.mithra.AggregateData;
-import com.gs.fw.common.mithra.MithraBusinessException;
-import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraNullPrimitiveException;
+import com.gs.fw.common.mithra.*;
 import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.IntegerAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorInteger;
@@ -61,6 +58,8 @@ import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.finder.orderby.IntegerOrderBy;
 import com.gs.fw.common.mithra.finder.orderby.OrderBy;
 import com.gs.fw.common.mithra.util.*;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -781,4 +780,9 @@ public abstract class IntegerAttribute<T> extends PrimitiveNumericAttribute<T, I
         return new IntegerAggregateAttribute(new AverageCalculatorNumeric(this));
     }
 
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    {
+        writer.writeInt((MithraObject) reladomoObject, context, this.getAttributeName(), this.intValueOf(reladomoObject));
+    }
 }

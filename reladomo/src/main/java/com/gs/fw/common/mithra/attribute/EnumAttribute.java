@@ -19,11 +19,14 @@ package com.gs.fw.common.mithra.attribute;
 
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.update.AttributeUpdateWrapper;
 import com.gs.fw.common.mithra.databasetype.DatabaseType;
 import com.gs.fw.common.mithra.extractor.EnumExtractor;
 import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.util.*;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -152,6 +155,12 @@ public abstract class EnumAttribute<Owner, E extends Enum<E>> extends NonPrimiti
 
     @Override
     public Operation zGetPrototypeOperation(Map<Attribute, Object> tempOperationPool)
+    {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
     {
         throw new RuntimeException("not implemented");
     }

@@ -20,6 +20,7 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.DateAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorDate;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorDate;
@@ -34,6 +35,8 @@ import com.gs.fw.common.mithra.extractor.DateExtractor;
 import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.util.MithraTimestamp;
 import com.gs.fw.common.mithra.util.MutableComparableReference;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -247,5 +250,11 @@ public abstract class DateAttribute<Owner> extends NonPrimitiveAttribute<Owner, 
     public Operation zGetPrototypeOperation(Map<Attribute, Object> tempOperationPool)
     {
         return this.eq(new Date(0));
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    {
+        writer.writeDate((MithraObject) reladomoObject, context, this.getAttributeName(), this.dateValueOf(reladomoObject));
     }
 }

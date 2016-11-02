@@ -19,10 +19,7 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.collections.api.set.primitive.FloatSet;
 import com.gs.collections.api.set.primitive.MutableFloatSet;
 import com.gs.collections.impl.set.mutable.primitive.FloatHashSet;
-import com.gs.fw.common.mithra.AggregateData;
-import com.gs.fw.common.mithra.MithraBusinessException;
-import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraNullPrimitiveException;
+import com.gs.fw.common.mithra.*;
 import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.FloatAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorFloat;
@@ -44,6 +41,8 @@ import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.finder.orderby.FloatOrderBy;
 import com.gs.fw.common.mithra.finder.orderby.OrderBy;
 import com.gs.fw.common.mithra.util.*;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -579,5 +578,11 @@ public abstract class FloatAttribute<T> extends PrimitiveNumericAttribute<T, Flo
     public FloatAggregateAttribute avg()
     {
         return new FloatAggregateAttribute(new AverageCalculatorNumeric(this));
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    {
+        writer.writeFloat((MithraObject) reladomoObject, context, this.getAttributeName(), this.floatValueOf(reladomoObject));
     }
 }

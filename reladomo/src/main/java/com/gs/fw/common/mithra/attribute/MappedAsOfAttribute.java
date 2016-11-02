@@ -23,6 +23,8 @@ import com.gs.fw.common.mithra.finder.ChainedMapper;
 import com.gs.fw.common.mithra.finder.MappedOperation;
 import com.gs.fw.common.mithra.finder.Mapper;
 import com.gs.fw.common.mithra.finder.Operation;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -204,5 +206,11 @@ public class MappedAsOfAttribute<T> extends AsOfAttribute<T> implements MappedAt
     public boolean isNullable()
     {
         return this.wrappedAttribute.isNullable();
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    {
+        throw new RuntimeException("should not get here");
     }
 }

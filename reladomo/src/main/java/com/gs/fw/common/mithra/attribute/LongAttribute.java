@@ -22,6 +22,7 @@ import com.gs.collections.impl.set.mutable.primitive.LongHashSet;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.LongAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorLong;
@@ -45,6 +46,8 @@ import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.finder.orderby.LongOrderBy;
 import com.gs.fw.common.mithra.finder.orderby.OrderBy;
 import com.gs.fw.common.mithra.util.*;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -605,5 +608,12 @@ public abstract class LongAttribute<T> extends PrimitiveNumericAttribute<T, Long
     public LongAggregateAttribute avg()
     {
         return new LongAggregateAttribute(new AverageCalculatorNumeric(this));
+    }
+
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    {
+        writer.writeLong((MithraObject) reladomoObject, context, this.getAttributeName(), this.longValueOf(reladomoObject));
     }
 }

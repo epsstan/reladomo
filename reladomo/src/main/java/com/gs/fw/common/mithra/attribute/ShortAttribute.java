@@ -19,10 +19,7 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.collections.api.set.primitive.MutableShortSet;
 import com.gs.collections.api.set.primitive.ShortSet;
 import com.gs.collections.impl.set.mutable.primitive.ShortHashSet;
-import com.gs.fw.common.mithra.AggregateData;
-import com.gs.fw.common.mithra.MithraBusinessException;
-import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraNullPrimitiveException;
+import com.gs.fw.common.mithra.*;
 import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.ShortAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
@@ -46,6 +43,8 @@ import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.finder.orderby.OrderBy;
 import com.gs.fw.common.mithra.finder.orderby.ShortOrderBy;
 import com.gs.fw.common.mithra.util.*;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -613,5 +612,11 @@ public abstract class ShortAttribute<T> extends PrimitiveNumericAttribute<T, Sho
     public ShortAggregateAttribute avg()
     {
         return new ShortAggregateAttribute(new AverageCalculatorNumeric(this));
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    {
+        writer.writeShort((MithraObject) reladomoObject, context, this.getAttributeName(), this.shortValueOf(reladomoObject));
     }
 }

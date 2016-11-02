@@ -19,6 +19,7 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.TimeAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorTime;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorTime;
@@ -30,6 +31,8 @@ import com.gs.fw.common.mithra.extractor.TimeExtractor;
 import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.util.MutableComparableReference;
 import com.gs.fw.common.mithra.util.Time;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -277,4 +280,10 @@ public abstract class TimeAttribute<Owner> extends NonPrimitiveAttribute<Owner, 
     }
 
     public abstract void forEach(final TimeProcedure proc, Owner o, Object context);
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    {
+        writer.writeTime((MithraObject) reladomoObject, context, this.getAttributeName(), this.timeValueOf(reladomoObject));
+    }
 }

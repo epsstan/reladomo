@@ -21,6 +21,7 @@ import com.gs.collections.api.block.procedure.primitive.IntObjectProcedure;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.StringAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.StringToIntegerNumericAttributeCalculator;
 import com.gs.fw.common.mithra.attribute.calculator.StringToLowerCaseCalculator;
@@ -37,6 +38,8 @@ import com.gs.fw.common.mithra.finder.*;
 import com.gs.fw.common.mithra.finder.string.*;
 import com.gs.fw.common.mithra.util.*;
 import com.gs.collections.impl.map.mutable.primitive.IntObjectHashMap;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -474,5 +477,11 @@ public abstract class StringAttribute<Owner> extends NonPrimitiveAttribute<Owner
         {
             localOp = localOp.or(substring(0, len).in(set));
         }
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    {
+        writer.writeString((MithraObject) reladomoObject, context, this.getAttributeName(), this.stringValueOf(reladomoObject));
     }
 }

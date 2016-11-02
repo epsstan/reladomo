@@ -19,6 +19,7 @@ package com.gs.fw.common.mithra.attribute;
 
 import com.gs.fw.common.mithra.AggregateAttribute;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.update.AttributeUpdateWrapper;
 import com.gs.fw.common.mithra.attribute.update.ByteArrayUpdateWrapper;
 import com.gs.fw.common.mithra.databasetype.DatabaseType;
@@ -30,6 +31,8 @@ import com.gs.fw.common.mithra.finder.bytearray.ByteArraySet;
 import com.gs.fw.common.mithra.finder.orderby.ByteArrayOrderBy;
 import com.gs.fw.common.mithra.finder.orderby.OrderBy;
 import com.gs.fw.common.mithra.util.HashUtil;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
+import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -395,5 +398,11 @@ public abstract class ByteArrayAttribute<Owner> extends NonPrimitiveAttribute<Ow
     public Operation zGetPrototypeOperation(Map<Attribute, Object> tempOperationPool)
     {
         return this.eq(new byte[0]);
+    }
+
+    @Override
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    {
+        writer.writeByteArray((MithraObject) reladomoObject, context, this.getAttributeName(), this.byteArrayValueOf(reladomoObject));
     }
 }
