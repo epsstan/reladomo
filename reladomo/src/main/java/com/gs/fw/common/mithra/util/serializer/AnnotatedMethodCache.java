@@ -22,10 +22,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 public class AnnotatedMethodCache
 {
+    private static final Comparator<? super Method> METHOD_NAME_COMPARATOR = new Comparator<Method>()
+    {
+        @Override
+        public int compare(Method o1, Method o2)
+        {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
     private static Logger logger = LoggerFactory.getLogger(AnnotatedMethodCache.class.getName());
     private static AnnotatedMethodCache ourInstance = new AnnotatedMethodCache();
 
@@ -40,61 +50,64 @@ public class AnnotatedMethodCache
     {
     }
 
-    public List<Method> get(Class clazz, String contextName)
+    public List<Method> get(Class clazz, Set<Class> contextNames)
     {
-        ClassAndContextName key = new ClassAndContextName(clazz, contextName);
+        ClassAndContextName key = new ClassAndContextName(clazz, contextNames);
         List<Method> methods = cache.get(key);
         if (methods == null)
         {
-            methods = findMethods(clazz, contextName);
+            methods = findMethods(clazz, contextNames);
             cache.put(key, methods);
         }
         return methods;
     }
 
-    private List<Method> findMethods(Class clazz, String contextName)
+    private List<Method> findMethods(Class clazz, Set<Class> contextNames)
     {
         Method[] allMethods = clazz.getMethods();
         FastList<Method> result = FastList.newList();
         for(Method method: allMethods)
         {
             ReladomoSerialize annotation = method.getAnnotation(ReladomoSerialize.class);
-            String[] names = annotation.contextNames();
-            for(String name: names)
+            if (annotation != null)
             {
-                if (name.equals(contextName))
+                Class[] names = annotation.serialViews();
+                for (Class name : names)
                 {
-                    if (method.getParameterTypes().length == 0)
+                    if (contextNames.contains(name))
                     {
-                        if (method.getReturnType().equals(Void.TYPE))
+                        if (method.getParameterTypes().length == 0)
                         {
-                            logger.warn("Incorrect method annotation in class "+clazz.getName()+" method "+method.getName()+" @ReladomoSerialize can only be used with methods that return something");
-                        }
-                        else
+                            if (method.getReturnType().equals(Void.TYPE))
+                            {
+                                logger.warn("Incorrect method annotation in class " + clazz.getName() + " method " + method.getName() + " @ReladomoSerialize can only be used with methods that return something");
+                            } else
+                            {
+                                result.add(method);
+                                break;
+                            }
+                        } else
                         {
-                            result.add(method);
+                            logger.warn("Incorrect method annotation in class " + clazz.getName() + " method " + method.getName() + " @ReladomoSerialize can only be used with methods that have no parameters");
                         }
-                    }
-                    else
-                    {
-                        logger.warn("Incorrect method annotation in class "+clazz.getName()+" method "+method.getName()+" @ReladomoSerialize can only be used with methods that have no parameters");
                     }
                 }
             }
         }
         result.trimToSize();
+        result.sortThis(METHOD_NAME_COMPARATOR);
         return result;
     }
 
     private static class ClassAndContextName
     {
         private final Class clazz;
-        private final String contextName;
+        private final Set<Class> contextNames;
 
-        public ClassAndContextName(Class clazz, String contextName)
+        public ClassAndContextName(Class clazz, Set<Class> contextNames)
         {
             this.clazz = clazz;
-            this.contextName = contextName;
+            this.contextNames = contextNames;
         }
 
         @Override
@@ -106,7 +119,7 @@ public class AnnotatedMethodCache
             ClassAndContextName that = (ClassAndContextName) o;
 
             if (!clazz.equals(that.clazz)) return false;
-            return contextName.equals(that.contextName);
+            return contextNames.equals(that.contextNames);
 
         }
 
@@ -114,7 +127,7 @@ public class AnnotatedMethodCache
         public int hashCode()
         {
             int result = clazz.hashCode();
-            result = 31 * result + contextName.hashCode();
+            result = 31 * result + contextNames.hashCode();
             return result;
         }
     }

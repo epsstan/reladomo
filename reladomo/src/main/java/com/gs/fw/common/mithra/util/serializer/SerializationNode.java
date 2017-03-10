@@ -44,6 +44,7 @@ public class SerializationNode
     private final AbstractRelatedFinder relatedFinder;
     private final boolean isLink;
     private Attribute[] linkAttributes;
+    private Class relatedClass;
 
     protected SerializationNode(RelatedFinder relatedFinder)
     {
@@ -58,7 +59,7 @@ public class SerializationNode
     protected SerializationNode(SerializationNode parent, RelatedFinder relatedFinder, boolean isLink)
     {
         this.parent = parent;
-        this.relatedFinder = (AbstractRelatedFinder) relatedFinder;
+        this.relatedFinder = ((AbstractRelatedFinder) relatedFinder).zWithoutParentSelector();
         this.isLink = isLink;
         if (this.isLink)
         {
@@ -104,16 +105,35 @@ public class SerializationNode
 
     private static void fillDefaultAttributes(RelatedFinder finder, SerializationNode result)
     {
-        FastList<Attribute> attributes = FastList.newListWith(finder.getPersistentAttributes());
+        FastList<Attribute> attributes = unwrapAttributes(finder.getPersistentAttributes());
         AsOfAttribute[] asOfAttributes = finder.getAsOfAttributes();
         if (asOfAttributes != null)
         {
             for(AsOfAttribute a: asOfAttributes)
             {
-                attributes.add(a);
+                attributes.add(unwrapAttribute(a));
             }
         }
         result.attributes = attributes;
+    }
+
+    private static FastList<Attribute> unwrapAttributes(Attribute[] persistentAttributes)
+    {
+        FastList<Attribute> list = FastList.newList(persistentAttributes.length);
+        for(Attribute a: persistentAttributes)
+        {
+            list.add(unwrapAttribute(a));
+        }
+        return list;
+    }
+
+    private static Attribute unwrapAttribute(Attribute a)
+    {
+        while (a instanceof MappedAttribute)
+        {
+            a = ((MappedAttribute)a).getWrappedAttribute();
+        }
+        return a;
     }
 
     protected static SerializationNode withDefaultAttributes(SerializationNode parent, RelatedFinder finder)
@@ -353,6 +373,77 @@ public class SerializationNode
         }
         result.children = newChildren;
         result.links = newLinks;
+        return result;
+    }
+
+    public SerializationNode withDeepDependents()
+    {
+        return this.withDeepDependents(null);
+    }
+
+    private SerializationNode withDeepDependents(SerializationNode parent)
+    {
+        SerializationNode result = new SerializationNode(parent, this.relatedFinder);
+        result.attributes = this.attributes;
+        result.children = FastList.newList(this.children);
+        result.links = this.links;
+
+        List<RelatedFinder> dependentRelationshipFinders = this.relatedFinder.getDependentRelationshipFinders();
+
+        List<SerializationNode> fullList = FastList.newList(dependentRelationshipFinders.size());
+        for(int i=0;i<dependentRelationshipFinders.size();i++)
+        {
+            RelatedFinder relatedFinder = dependentRelationshipFinders.get(i);
+            int childIndex = childIndex(result.children, relatedFinder);
+            if (childIndex >= 0)
+            {
+                result.children.set(childIndex, result.children.get(childIndex).withDeepDependents());
+            }
+            else
+            {
+                SerializationNode child = SerializationNode.withDefaultAttributes(result, relatedFinder);
+                child = child.withDeepDependents(result);
+                fullList.add(child);
+            }
+        }
+
+        result.children.addAll(fullList);
+
+        if (!this.links.isEmpty())
+        {
+            result = result.withLinks();
+        }
+        return result;
+    }
+
+    private int childIndex(List<SerializationNode> children, RelatedFinder relatedFinder)
+    {
+        for(int i=0;i<children.size();i++)
+        {
+            if (children.get(i).relatedFinder.equals(relatedFinder))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public Class getRelatedClass()
+    {
+        Class result = relatedClass;
+        if (result == null)
+        {
+            String name = relatedFinder.getFinderClassName().substring(0, relatedFinder.getFinderClassName().length() - "Finder".length());
+            try
+            {
+                result = Class.forName(name);
+                relatedClass = result;
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new RuntimeException("Could not find class "+name, e);
+            }
+        }
         return result;
     }
 }

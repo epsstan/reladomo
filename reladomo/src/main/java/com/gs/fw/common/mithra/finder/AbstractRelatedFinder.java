@@ -367,4 +367,16 @@ public abstract class AbstractRelatedFinder<ReturnType, ParentOwnerType, ReturnO
     {
         this.getMithraObjectPortal().registerForApplicationClassLevelNotification(sourceAttributeValueSet, listener);
     }
+
+    public AbstractRelatedFinder<ReturnType, ParentOwnerType, ReturnOrRetunListType, ReturnListType, OwnerType> zWithoutParentSelector()
+    {
+        if (this._parentSelector == null)
+        {
+            return this;
+        }
+        AbstractRelatedFinder copy = (AbstractRelatedFinder) ((DeepRelationshipAttribute) this).copy();
+        copy._parentSelector = null;
+        copy.mapper = ((LinkedMapper)copy.mapper).getLastMapper();
+        return copy;
+    }
 }

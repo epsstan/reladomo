@@ -463,7 +463,7 @@ public abstract class BooleanAttribute<T> extends Attribute<T, Boolean> implemen
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeBoolean((MithraObject) reladomoObject, context, this.getAttributeName(), this.booleanValueOf(reladomoObject));
     }

@@ -683,7 +683,7 @@ public abstract class Attribute<Owner, V> implements com.gs.fw.finder.Attribute<
         this.owningReverseRelationshipName = owningReverseRelationshipName;
     }
 
-    public void zWriteSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    public void zWriteSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws Exception
     {
         if (this.isAttributeNull(reladomoObject))
         {
@@ -695,5 +695,5 @@ public abstract class Attribute<Owner, V> implements com.gs.fw.finder.Attribute<
         }
     }
 
-    protected abstract void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject);
+    protected abstract void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException;
 }

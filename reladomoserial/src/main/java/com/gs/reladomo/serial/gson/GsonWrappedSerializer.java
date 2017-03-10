@@ -16,28 +16,21 @@
 
 package com.gs.reladomo.serial.gson;
 
-
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.gs.fw.common.mithra.MithraObject;
-import com.gs.fw.common.mithra.finder.RelatedFinder;
-import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
-import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
+import com.gs.fw.common.mithra.util.serializer.Serialized;
 
 import java.lang.reflect.Type;
 
-public class ExampleReladomoGsonSerializer<T extends MithraObject> implements JsonSerializer<T>
+public class GsonWrappedSerializer implements JsonSerializer<Serialized>
 {
-
     @Override
-    public JsonElement serialize(T t, Type type, JsonSerializationContext gsonContext)
+    public JsonElement serialize(Serialized serialized, Type type, JsonSerializationContext gsonContext)
     {
-        RelatedFinder finder = t.zGetPortal().getFinder();
         GsonReladomoSerialWriter writer = new GsonReladomoSerialWriter();
-        GsonRelodomoSerialContext gsonRelodomoSerialContext = new GsonRelodomoSerialContext(SerializationConfig.shallowWithDefaultAttributes(finder), writer, gsonContext);
-        gsonRelodomoSerialContext.serializeReladomoObject(t);
+        GsonRelodomoSerialContext gsonRelodomoSerialContext = new GsonRelodomoSerialContext(serialized.getConfig(), writer, gsonContext);
+        gsonRelodomoSerialContext.serializeReladomoObject(serialized.getWrapped());
         return gsonRelodomoSerialContext.getResult();
     }
 }

@@ -16,14 +16,32 @@
 
 package com.gs.fw.common.mithra.util.serializer;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.gs.fw.common.mithra.MithraList;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface ReladomoSerialize
+public class SerializedList<T extends MithraList>
 {
-    Class[] serialViews();
+    private T wrapped;
+    private SerializationConfig config;
+
+    public SerializedList(T wrapped, SerializationConfig config)
+    {
+        this.wrapped = wrapped;
+        this.config = config;
+    }
+
+    public SerializedList(T wrapped, String configName)
+    {
+        this.wrapped = wrapped;
+        this.config = SerializationConfig.byName(configName);
+    }
+
+    public T getWrapped()
+    {
+        return wrapped;
+    }
+
+    public SerializationConfig getConfig()
+    {
+        return config;
+    }
 }

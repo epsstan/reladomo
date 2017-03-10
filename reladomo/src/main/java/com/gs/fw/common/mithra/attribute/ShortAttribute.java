@@ -20,12 +20,10 @@ import com.gs.collections.api.set.primitive.MutableShortSet;
 import com.gs.collections.api.set.primitive.ShortSet;
 import com.gs.collections.impl.set.mutable.primitive.ShortHashSet;
 import com.gs.fw.common.mithra.*;
-import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.ShortAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorNumeric;
-import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.StandardDeviationCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.SumCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.numericType.BigDecimalNumericType;
 import com.gs.fw.common.mithra.attribute.numericType.DoubleNumericType;
@@ -615,7 +613,7 @@ public abstract class ShortAttribute<T> extends PrimitiveNumericAttribute<T, Sho
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeShort((MithraObject) reladomoObject, context, this.getAttributeName(), this.shortValueOf(reladomoObject));
     }

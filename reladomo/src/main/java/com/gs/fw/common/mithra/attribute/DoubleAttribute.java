@@ -25,7 +25,6 @@ import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorDoubl
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorNumeric;
-import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.StandardDeviationCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.SumCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.arithmeticCalculator.ConstAdditionCalculatorBigDecimal;
 import com.gs.fw.common.mithra.attribute.calculator.arithmeticCalculator.ConstAdditionCalculatorDouble;
@@ -679,7 +678,7 @@ public abstract class DoubleAttribute<T> extends PrimitiveNumericAttribute<T, Do
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeDouble((MithraObject) reladomoObject, context, this.getAttributeName(), this.doubleValueOf(reladomoObject));
     }

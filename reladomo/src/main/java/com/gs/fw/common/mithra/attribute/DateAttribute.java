@@ -253,7 +253,7 @@ public abstract class DateAttribute<Owner> extends NonPrimitiveAttribute<Owner, 
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         writer.writeDate((MithraObject) reladomoObject, context, this.getAttributeName(), this.dateValueOf(reladomoObject));
     }

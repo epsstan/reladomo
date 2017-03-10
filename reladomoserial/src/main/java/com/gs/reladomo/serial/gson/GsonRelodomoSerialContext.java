@@ -19,6 +19,7 @@ package com.gs.reladomo.serial.gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
 import com.gs.fw.common.mithra.util.serializer.SerialWriter;
@@ -28,37 +29,69 @@ import java.util.List;
 
 public class GsonRelodomoSerialContext extends ReladomoSerializationContext
 {
-    private List<JsonElement> result = FastList.newList();
+    private List<JsonElement> stack = FastList.newList();
+    private JsonSerializationContext gsonContext;
+    private JsonObject result;
 
-    public GsonRelodomoSerialContext(SerializationConfig serializationConfig, SerialWriter writer, JsonObject result)
+    public GsonRelodomoSerialContext(SerializationConfig serializationConfig, SerialWriter writer, JsonSerializationContext gsonContext)
     {
         super(serializationConfig, writer);
-        this.result.add(result);
+        this.gsonContext = gsonContext;
     }
 
     public JsonObject getCurrentResultAsObject()
     {
-        return (JsonObject) result.get(result.size() - 1);
+        return (JsonObject) stack.get(stack.size() - 1);
     }
 
     public JsonObject pushNewObject(String name)
     {
         JsonObject newObj = new JsonObject();
-        getCurrentResultAsObject().add(name, newObj);
-        result.add(newObj);
+        if (name == null)
+        {
+            if (stack.size() == 0)
+            {
+                result = newObj;
+                stack.add(newObj);
+            }
+            else
+            {
+                JsonElement jsonElement = stack.get(stack.size() - 1);
+                if (jsonElement instanceof JsonArray)
+                {
+                    ((JsonArray)jsonElement).add(newObj);
+                    stack.add(newObj);
+                }
+            }
+        }
+        else
+        {
+            getCurrentResultAsObject().add(name, newObj);
+            stack.add(newObj);
+        }
         return newObj;
     }
 
     public JsonElement pop()
     {
-        return result.remove(result.size() - 1);
+        return stack.remove(stack.size() - 1);
     }
 
     public JsonArray pushNewArray(String name)
     {
         JsonArray newObj = new JsonArray();
         getCurrentResultAsObject().add(name, newObj);
-        result.add(newObj);
+        stack.add(newObj);
         return newObj;
+    }
+
+    public JsonObject getResult()
+    {
+        return result;
+    }
+
+    public JsonSerializationContext getGsonContext()
+    {
+        return gsonContext;
     }
 }

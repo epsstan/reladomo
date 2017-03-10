@@ -16,6 +16,7 @@
 
 package com.gs.reladomo.serial.gson;
 
+import com.google.gson.JsonNull;
 import com.gs.fw.common.mithra.MithraList;
 import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.Attribute;
@@ -25,10 +26,37 @@ import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerialContext>
 {
+    private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    static
+    {
+        TIMESTAMP_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+
+    private static String timestampToJson(Timestamp timestamp)
+    {
+        synchronized (TIMESTAMP_FORMAT)
+        {
+            return TIMESTAMP_FORMAT.format(timestamp);
+        }
+    }
+
+    private static String dateToJson(Date timestamp)
+    {
+        synchronized (DATE_FORMAT)
+        {
+            return DATE_FORMAT.format(timestamp);
+        }
+    }
+
+
     @Override
     public void writeBoolean(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, boolean value)
     {
@@ -80,7 +108,7 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void writeByteArray(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, byte[] value)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, value);
+        context.getCurrentResultAsObject().add(attributeName, context.getGsonContext().serialize(value));
     }
 
     @Override
@@ -92,13 +120,13 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void writeTimestamp(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Timestamp value)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, value);
+        context.getCurrentResultAsObject().addProperty(attributeName, timestampToJson(value));
     }
 
     @Override
     public void writeDate(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Date value)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, value);
+        context.getCurrentResultAsObject().addProperty(attributeName, dateToJson(value));
     }
 
     @Override
@@ -110,13 +138,13 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void writeTime(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Time value)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, value);
+        context.getCurrentResultAsObject().addProperty(attributeName, value.toString());
     }
 
     @Override
     public void writeObject(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Object value)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, value);
+        context.getCurrentResultAsObject().add(attributeName, context.getGsonContext().serialize(value));
     }
 
     @Override
@@ -128,19 +156,19 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void writeNull(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Class type)
     {
-        context.getCurrentResultAsObject().addProperty(attributeName, (String) null);
+        context.getCurrentResultAsObject().add(attributeName, JsonNull.INSTANCE);
     }
 
     @Override
     public void startReladomoObject(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-
+        context.pushNewObject(null);
     }
 
     @Override
     public void endReladomoObject(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-
+        context.pop();
     }
 
     @Override
@@ -152,31 +180,30 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void endRelatedObject(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value)
     {
-        context.pop();
     }
 
     @Override
     public void startRelatedReladomoList(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
     {
-
+        context.pushNewObject(attributeName);
     }
 
     @Override
     public void endRelatedReladomoList(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
     {
-
+        context.pop();
     }
 
     @Override
     public void startMetadata(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-
+        context.pushNewObject("_rdoMetaData");
     }
 
     @Override
     public void writeMetadataEnd(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-
+        context.pop();
     }
 
     @Override
@@ -230,25 +257,25 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void startReladomoList(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-
+        context.pushNewObject(null);
     }
 
     @Override
     public void endReladomoList(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-
+        context.pop();
     }
 
     @Override
     public void startReladomoListMetatdata(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-
+        context.pushNewObject("_rdoMetaData");
     }
 
     @Override
     public void endReladomoListMedatadata(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-
+        context.pop();
     }
 
     @Override
@@ -261,5 +288,17 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     public void endReladomoListItem(MithraList reladomoList, GsonRelodomoSerialContext gsonRelodomoSerialContext, int index, MithraObject reladomoObject)
     {
 
+    }
+
+    @Override
+    public void startReladomoListElements(MithraList reladomoList, GsonRelodomoSerialContext context)
+    {
+        context.pushNewArray("elements");
+    }
+
+    @Override
+    public void endReladomoListElements(MithraList reladomoList, GsonRelodomoSerialContext context)
+    {
+        context.pop();
     }
 }

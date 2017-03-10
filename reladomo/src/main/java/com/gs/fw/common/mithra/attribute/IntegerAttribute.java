@@ -20,7 +20,6 @@ import com.gs.collections.api.set.primitive.IntSet;
 import com.gs.collections.api.set.primitive.MutableIntSet;
 import com.gs.collections.impl.set.mutable.primitive.IntHashSet;
 import com.gs.fw.common.mithra.*;
-import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.IntegerAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorInteger;
 import com.gs.fw.common.mithra.attribute.calculator.IntegerToStringCalculator;
@@ -28,7 +27,6 @@ import com.gs.fw.common.mithra.attribute.calculator.ModCalculatorInteger;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorNumeric;
-import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.StandardDeviationCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.SumCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.arithmeticCalculator.ConstAdditionCalculatorBigDecimal;
 import com.gs.fw.common.mithra.attribute.calculator.arithmeticCalculator.ConstAdditionCalculatorDouble;
@@ -781,7 +779,7 @@ public abstract class IntegerAttribute<T> extends PrimitiveNumericAttribute<T, I
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeInt((MithraObject) reladomoObject, context, this.getAttributeName(), this.intValueOf(reladomoObject));
     }

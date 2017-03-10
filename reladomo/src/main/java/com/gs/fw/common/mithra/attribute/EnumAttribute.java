@@ -19,7 +19,6 @@ package com.gs.fw.common.mithra.attribute;
 
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.update.AttributeUpdateWrapper;
 import com.gs.fw.common.mithra.databasetype.DatabaseType;
 import com.gs.fw.common.mithra.extractor.EnumExtractor;
@@ -160,7 +159,7 @@ public abstract class EnumAttribute<Owner, E extends Enum<E>> extends NonPrimiti
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         throw new RuntimeException("not implemented");
     }

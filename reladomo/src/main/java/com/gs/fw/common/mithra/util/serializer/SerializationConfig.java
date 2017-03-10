@@ -34,8 +34,9 @@ public class SerializationConfig
     private static final UnifiedMap<String, SerializationConfig> BY_NAME = new UnifiedMap<String, SerializationConfig>();
 
     private SerializationNode rootNode;
-    private String annotatedContextName;
+    private Set<Class> annotatedContextNames;
     private Set<Method> excludedMethods;
+    private boolean serializeMetaData = true;
 
     public static SerializationConfig byName(String name)
     {
@@ -72,11 +73,16 @@ public class SerializationConfig
         return rootNode;
     }
 
+    public boolean serializeMetaData()
+    {
+        return serializeMetaData;
+    }
+
     public SerializationConfig withoutTheseAttributes(Attribute... attributes)
     {
         SerializationConfig config = new SerializationConfig();
         config.rootNode = this.rootNode.withoutTheseAttributes(attributes);
-        config.annotatedContextName = this.annotatedContextName;
+        config.annotatedContextNames = this.annotatedContextNames;
         config.excludedMethods = this.excludedMethods;
         return config;
     }
@@ -85,16 +91,22 @@ public class SerializationConfig
     {
         SerializationConfig config = new SerializationConfig();
         config.rootNode = this.rootNode.withDeepFetches(deepFetches);
-        config.annotatedContextName = this.annotatedContextName;
+        config.annotatedContextNames = this.annotatedContextNames;
         config.excludedMethods = this.excludedMethods;
         return config;
     }
 
-    public SerializationConfig withAnnotatedMethods(String contextName)
+    public SerializationConfig withAnnotatedMethods(Class viewClass)
     {
         SerializationConfig config = new SerializationConfig();
         config.rootNode = this.rootNode;
-        config.annotatedContextName = contextName;
+        config.annotatedContextNames = this.annotatedContextNames != null ? UnifiedSet.newSet(this.annotatedContextNames) : UnifiedSet.<Class>newSet(2);
+        do
+        {
+            config.annotatedContextNames.add(viewClass);
+            viewClass = viewClass.getSuperclass();
+        }
+        while (viewClass != null && viewClass != Object.class);
         config.excludedMethods = this.excludedMethods;
         return config;
     }
@@ -103,7 +115,7 @@ public class SerializationConfig
     {
         SerializationConfig config = new SerializationConfig();
         config.rootNode = this.rootNode.withLinks();
-        config.annotatedContextName = this.annotatedContextName;
+        config.annotatedContextNames = this.annotatedContextNames;
         config.excludedMethods = this.excludedMethods;
         return config;
     }
@@ -112,7 +124,7 @@ public class SerializationConfig
     {
         SerializationConfig config = new SerializationConfig();
         config.rootNode = this.rootNode;
-        config.annotatedContextName = this.annotatedContextName;
+        config.annotatedContextNames = this.annotatedContextNames;
         UnifiedSet<Method> newMethods = UnifiedSet.newSetWith(methods);
         if (this.excludedMethods != null)
         {
@@ -124,11 +136,11 @@ public class SerializationConfig
 
     public List<Method> getAnnotatedMethods(Class clazz)
     {
-        if (annotatedContextName == null)
+        if (annotatedContextNames == null)
         {
             return ListFactory.EMPTY_LIST;
         }
-        List<Method> methods = AnnotatedMethodCache.getInstance().get(clazz, this.annotatedContextName);
+        List<Method> methods = AnnotatedMethodCache.getInstance().get(clazz, this.annotatedContextNames);
         if (excludedMethods != null)
         {
             List<Method> filtered = FastList.newList(methods);
@@ -138,4 +150,22 @@ public class SerializationConfig
         return methods;
     }
 
+    public SerializationConfig withDeepDependents()
+    {
+        SerializationConfig config = new SerializationConfig();
+        config.rootNode = this.rootNode.withDeepDependents();
+        config.annotatedContextNames = this.annotatedContextNames;
+        config.excludedMethods = this.excludedMethods;
+        return config;
+    }
+
+    public SerializationConfig withoutMetaData()
+    {
+        SerializationConfig config = new SerializationConfig();
+        config.rootNode = this.rootNode;
+        config.annotatedContextNames = this.annotatedContextNames;
+        config.excludedMethods = this.excludedMethods;
+        config.serializeMetaData = false;
+        return config;
+    }
 }

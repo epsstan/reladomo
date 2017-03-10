@@ -504,7 +504,7 @@ public abstract class TimestampAttribute<Owner> extends NonPrimitiveAttribute<Ow
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         writer.writeTimestamp((MithraObject) reladomoObject, context, this.getAttributeName(), this.timestampValueOf(reladomoObject));
     }

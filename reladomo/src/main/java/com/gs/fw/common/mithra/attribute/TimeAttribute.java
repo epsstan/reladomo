@@ -282,7 +282,7 @@ public abstract class TimeAttribute<Owner> extends NonPrimitiveAttribute<Owner, 
     public abstract void forEach(final TimeProcedure proc, Owner o, Object context);
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         writer.writeTime((MithraObject) reladomoObject, context, this.getAttributeName(), this.timeValueOf(reladomoObject));
     }

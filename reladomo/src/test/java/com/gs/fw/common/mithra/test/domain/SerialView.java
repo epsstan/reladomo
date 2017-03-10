@@ -14,16 +14,12 @@
   under the License.
  */
 
-package com.gs.fw.common.mithra.util.serializer;
+package com.gs.fw.common.mithra.test.domain;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface ReladomoSerialize
+public class SerialView
 {
-    Class[] serialViews();
+    public static class Shorter {}
+    public static class Longer extends Shorter {}
+    public static class HandPicked {}
+
 }

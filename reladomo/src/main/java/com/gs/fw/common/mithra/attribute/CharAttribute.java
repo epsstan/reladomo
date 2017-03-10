@@ -427,7 +427,7 @@ public abstract class CharAttribute<T> extends Attribute<T, Character> implement
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeChar((MithraObject) reladomoObject, context, this.getAttributeName(), this.charValueOf(reladomoObject));
     }

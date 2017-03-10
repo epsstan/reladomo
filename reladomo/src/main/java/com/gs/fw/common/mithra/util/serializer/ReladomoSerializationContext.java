@@ -57,30 +57,40 @@ public class ReladomoSerializationContext
 
     public void serializeReladomoObject(MithraObject reladomoObject)
     {
-        writer.startReladomoObject(reladomoObject, this);
-        
-        writer.startMetadata(reladomoObject, this);
-        serializeClassMetadata(reladomoObject);
-        writer.writeMetadataEnd(reladomoObject, this);
-        
-        writer.startAttributes(reladomoObject, this, this.currentNode.getAttributes().size());
-        serializeAttributes(reladomoObject);
-        writer.endAttributes(reladomoObject, this);
-        
-        writer.startRelationships(reladomoObject, this, this.currentNode.getChildren().size());
-        serializeRelationships(reladomoObject);
-        writer.endRelationships(reladomoObject, this);
+        try
+        {
+            writer.startReladomoObject(reladomoObject, this);
 
-        writer.startLinks(reladomoObject, this, this.currentNode.getLinks().size());
-        serializeLinks(reladomoObject);
-        writer.endLinks(reladomoObject, this);
+            if (this.serializationConfig.serializeMetaData())
+            {
+                writer.startMetadata(reladomoObject, this);
+                serializeClassMetadata(reladomoObject);
+                writer.writeMetadataEnd(reladomoObject, this);
+            }
 
-        List<Method> annotatedMethods = getAnnotatedMethods(reladomoObject);
-        writer.startAnnotatedMethod(reladomoObject, this, annotatedMethods.size());
-        serializeAnnotatedMethods(reladomoObject, annotatedMethods);
-        writer.endAnnotatedMethod(reladomoObject, this);
+            writer.startAttributes(reladomoObject, this, this.currentNode.getAttributes().size());
+            serializeAttributes(reladomoObject);
+            writer.endAttributes(reladomoObject, this);
 
-        writer.endReladomoObject(reladomoObject, this);
+            writer.startRelationships(reladomoObject, this, this.currentNode.getChildren().size());
+            serializeRelationships(reladomoObject);
+            writer.endRelationships(reladomoObject, this);
+
+            writer.startLinks(reladomoObject, this, this.currentNode.getLinks().size());
+            serializeLinks(reladomoObject);
+            writer.endLinks(reladomoObject, this);
+
+            List<Method> annotatedMethods = getAnnotatedMethods(reladomoObject);
+            writer.startAnnotatedMethod(reladomoObject, this, annotatedMethods.size());
+            serializeAnnotatedMethods(reladomoObject, annotatedMethods);
+            writer.endAnnotatedMethod(reladomoObject, this);
+
+            writer.endReladomoObject(reladomoObject, this);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Could not serialize object", e);
+        }
     }
 
     protected List<Method> getAnnotatedMethods(MithraObject reladomoObject)
@@ -88,7 +98,7 @@ public class ReladomoSerializationContext
         return this.serializationConfig.getAnnotatedMethods(reladomoObject.getClass());
     }
 
-    protected void serializeLinks(MithraObject reladomoObject)
+    protected void serializeLinks(MithraObject reladomoObject) throws Exception
     {
         List<SerializationNode> links = this.currentNode.getLinks();
         for(int i=0;i<links.size();i++)
@@ -98,7 +108,7 @@ public class ReladomoSerializationContext
         }
     }
 
-    protected void serializeAnnotatedMethods(MithraObject reladomoObject, List<Method> annotatedMethods)
+    protected void serializeAnnotatedMethods(MithraObject reladomoObject, List<Method> annotatedMethods) throws Exception
     {
         for(int i=0;i<annotatedMethods.size();i++)
         {
@@ -126,7 +136,7 @@ public class ReladomoSerializationContext
         }
     }
 
-    private void writeByType(MithraObject reladomoObject, Object methodResult, String methodAttributeName)
+    protected void writeByType(MithraObject reladomoObject, Object methodResult, String methodAttributeName) throws Exception
     {
         if (methodResult instanceof Boolean)
         {
@@ -200,7 +210,7 @@ public class ReladomoSerializationContext
         return name;
     }
 
-    protected void serializeRelationships(MithraObject reladomoObject)
+    protected void serializeRelationships(MithraObject reladomoObject) throws Exception
     {
         SerializationNode pushedNode = this.currentNode;
         List<SerializationNode> children = this.currentNode.getChildren();
@@ -212,22 +222,29 @@ public class ReladomoSerializationContext
             if (relatedFinder.isToOne())
             {
                 MithraObject related = (MithraObject) relatedFinder.valueOf(reladomoObject);
-                this.writer.startRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
-                this.serializeReladomoObject(related);
-                this.writer.endRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
+                if (related == null)
+                {
+                    this.writer.writeNull(reladomoObject, this, relatedFinder.getRelationshipName(), serializationNode.getRelatedClass());
+                }
+                else
+                {
+                    this.writer.startRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
+                    this.serializeReladomoObject(related);
+                    this.writer.endRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
+                }
             }
             else
             {
-                MithraList relatedList = (MithraList) relatedFinder.listValueOf(reladomoObject);
+                MithraList relatedList = (MithraList) relatedFinder.valueOf(reladomoObject);
                 this.writer.startRelatedReladomoList(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
-                this.serializeReladomoList(relatedList);
+                this.serializeListComponents(relatedList);
                 this.writer.endRelatedReladomoList(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
             }
         }
         this.currentNode = pushedNode;
     }
 
-    protected void serializeAttributes(MithraObject reladomoObject)
+    protected void serializeAttributes(MithraObject reladomoObject) throws Exception
     {
         List<Attribute> attributes = this.currentNode.getAttributes();
         for(int i=0;i<attributes.size();i++)
@@ -236,7 +253,7 @@ public class ReladomoSerializationContext
         }
     }
 
-    protected void serializeClassMetadata(MithraObject reladomoObject)
+    protected void serializeClassMetadata(MithraObject reladomoObject) throws Exception
     {
         writer.writeString(reladomoObject, this, RELADOMO_CLASS_NAME, reladomoObject.getClass().getName());
         byte state;
@@ -265,13 +282,31 @@ public class ReladomoSerializationContext
 
     public void serializeReladomoList(MithraList reladomoList)
     {
-        writer.startReladomoList(reladomoList, this);
+        try
+        {
+            writer.startReladomoList(reladomoList, this);
 
-        writer.startReladomoListMetatdata(reladomoList, this);
-        writer.writeString(null, this, RELADOMO_CLASS_NAME, getCurrentClassName());
-        writer.writeInt(null, this, RELADOMO_LIST_SIZE, reladomoList.size());
-        writer.endReladomoListMedatadata(reladomoList, this);
+            serializeListComponents(reladomoList);
 
+            writer.endReladomoList(reladomoList, this);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Could not serialize list", e);
+        }
+    }
+
+    protected void serializeListComponents(MithraList reladomoList) throws Exception
+    {
+        if (this.serializationConfig.serializeMetaData())
+        {
+            writer.startReladomoListMetatdata(reladomoList, this);
+            writer.writeString(null, this, RELADOMO_CLASS_NAME, getCurrentClassName());
+            writer.writeInt(null, this, RELADOMO_LIST_SIZE, reladomoList.size());
+            writer.endReladomoListMedatadata(reladomoList, this);
+        }
+
+        writer.startReladomoListElements(reladomoList, this);
         for(int i=0;i<reladomoList.size();i++)
         {
             MithraObject reladomoObject = (MithraObject) reladomoList.get(i);
@@ -279,8 +314,7 @@ public class ReladomoSerializationContext
             serializeReladomoObject(reladomoObject);
             writer.endReladomoListItem(reladomoList, this, i, reladomoObject);
         }
-
-        writer.endReladomoList(reladomoList, this);
+        writer.endReladomoListElements(reladomoList, this);
     }
 
     protected String getCurrentClassName()

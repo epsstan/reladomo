@@ -41,6 +41,7 @@ import com.gs.collections.impl.map.mutable.primitive.IntObjectHashMap;
 import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
 import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
@@ -480,7 +481,7 @@ public abstract class StringAttribute<Owner> extends NonPrimitiveAttribute<Owner
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         writer.writeString((MithraObject) reladomoObject, context, this.getAttributeName(), this.stringValueOf(reladomoObject));
     }

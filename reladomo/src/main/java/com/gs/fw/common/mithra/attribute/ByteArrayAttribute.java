@@ -401,7 +401,7 @@ public abstract class ByteArrayAttribute<Owner> extends NonPrimitiveAttribute<Ow
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
         writer.writeByteArray((MithraObject) reladomoObject, context, this.getAttributeName(), this.byteArrayValueOf(reladomoObject));
     }

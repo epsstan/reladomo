@@ -21,11 +21,9 @@ import com.gs.collections.api.set.primitive.MutableByteSet;
 import com.gs.collections.impl.set.mutable.primitive.ByteHashSet;
 import com.gs.fw.common.mithra.*;
 import com.gs.fw.common.mithra.aggregate.attribute.ByteAggregateAttribute;
-import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorNumeric;
-import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.StandardDeviationCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.SumCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.numericType.BigDecimalNumericType;
 import com.gs.fw.common.mithra.attribute.numericType.DoubleNumericType;
@@ -605,7 +603,7 @@ public abstract class ByteAttribute<T> extends PrimitiveNumericAttribute<T, Byte
 
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeByte((MithraObject) reladomoObject, context, this.getAttributeName(), this.byteValueOf(reladomoObject));
     }

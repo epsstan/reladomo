@@ -20,13 +20,11 @@ import com.gs.collections.api.set.primitive.FloatSet;
 import com.gs.collections.api.set.primitive.MutableFloatSet;
 import com.gs.collections.impl.set.mutable.primitive.FloatHashSet;
 import com.gs.fw.common.mithra.*;
-import com.gs.fw.common.mithra.aggregate.attribute.DoubleAggregateAttribute;
 import com.gs.fw.common.mithra.aggregate.attribute.FloatAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorFloat;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorNumeric;
-import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.StandardDeviationCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.SumCalculatorNumeric;
 import com.gs.fw.common.mithra.attribute.numericType.DoubleNumericType;
 import com.gs.fw.common.mithra.attribute.numericType.FloatNumericType;
@@ -581,7 +579,7 @@ public abstract class FloatAttribute<T> extends PrimitiveNumericAttribute<T, Flo
     }
 
     @Override
-    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject)
+    protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
         writer.writeFloat((MithraObject) reladomoObject, context, this.getAttributeName(), this.floatValueOf(reladomoObject));
     }
