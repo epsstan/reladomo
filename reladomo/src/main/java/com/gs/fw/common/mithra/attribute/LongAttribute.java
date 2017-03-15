@@ -22,7 +22,6 @@ import com.gs.collections.impl.set.mutable.primitive.LongHashSet;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.LongAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.AbsoluteValueCalculatorLong;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.AverageCalculatorNumeric;
@@ -612,6 +611,6 @@ public abstract class LongAttribute<T> extends PrimitiveNumericAttribute<T, Long
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeLong((MithraObject) reladomoObject, context, this.getAttributeName(), this.longValueOf(reladomoObject));
+        writer.writeLong(context, this.getAttributeName(), this.longValueOf(reladomoObject));
     }
 }

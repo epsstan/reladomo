@@ -21,7 +21,6 @@ import com.gs.collections.api.block.procedure.primitive.IntObjectProcedure;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.StringAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.StringToIntegerNumericAttributeCalculator;
 import com.gs.fw.common.mithra.attribute.calculator.StringToLowerCaseCalculator;
@@ -483,6 +482,6 @@ public abstract class StringAttribute<Owner> extends NonPrimitiveAttribute<Owner
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
-        writer.writeString((MithraObject) reladomoObject, context, this.getAttributeName(), this.stringValueOf(reladomoObject));
+        writer.writeString(context, this.getAttributeName(), this.stringValueOf(reladomoObject));
     }
 }

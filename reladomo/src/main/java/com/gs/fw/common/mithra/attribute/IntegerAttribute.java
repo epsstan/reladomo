@@ -781,6 +781,6 @@ public abstract class IntegerAttribute<T> extends PrimitiveNumericAttribute<T, I
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeInt((MithraObject) reladomoObject, context, this.getAttributeName(), this.intValueOf(reladomoObject));
+        writer.writeInt(context, this.getAttributeName(), this.intValueOf(reladomoObject));
     }
 }

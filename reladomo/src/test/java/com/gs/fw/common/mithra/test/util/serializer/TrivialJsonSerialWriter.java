@@ -63,114 +63,114 @@ public class TrivialJsonSerialWriter implements SerialWriter<AppendableSerialCon
     }
 
     @Override
-    public void writeBoolean(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, boolean value) throws IOException
+    public void writeBoolean(AppendableSerialContext context, String attributeName, boolean value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeByte(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, byte value) throws IOException
+    public void writeByte(AppendableSerialContext context, String attributeName, byte value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeShort(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, short value) throws IOException
+    public void writeShort(AppendableSerialContext context, String attributeName, short value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeInt(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, int value) throws IOException
+    public void writeInt(AppendableSerialContext context, String attributeName, int value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeLong(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, long value) throws IOException
+    public void writeLong(AppendableSerialContext context, String attributeName, long value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeChar(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, char value) throws IOException
+    public void writeChar(AppendableSerialContext context, String attributeName, char value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append('"').append(value).append('"');
     }
 
     @Override
-    public void writeFloat(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, float value) throws IOException
+    public void writeFloat(AppendableSerialContext context, String attributeName, float value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeDouble(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, double value) throws IOException
+    public void writeDouble(AppendableSerialContext context, String attributeName, double value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeByteArray(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, byte[] value) throws IOException
+    public void writeByteArray(AppendableSerialContext context, String attributeName, byte[] value) throws IOException
     {
         //todo
     }
 
     @Override
-    public void writeBigDecimal(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, BigDecimal value) throws IOException
+    public void writeBigDecimal(AppendableSerialContext context, String attributeName, BigDecimal value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeTimestamp(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, Timestamp value) throws IOException
+    public void writeTimestamp(AppendableSerialContext context, String attributeName, Timestamp value) throws IOException
     {
-        writeString(reladomoObject, context, attributeName, timestampToJson(value));
+        writeString(context, attributeName, timestampToJson(value));
     }
 
     @Override
-    public void writeDate(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, Date value) throws IOException
+    public void writeDate(AppendableSerialContext context, String attributeName, Date value) throws IOException
     {
-        writeString(reladomoObject, context, attributeName, dateToJson(value));
+        writeString(context, attributeName, dateToJson(value));
     }
 
     @Override
-    public void writeString(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, String value) throws IOException
+    public void writeString(AppendableSerialContext context, String attributeName, String value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append('"').append(value).append('"');
     }
 
     @Override
-    public void writeTime(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, Time value) throws IOException
+    public void writeTime(AppendableSerialContext context, String attributeName, Time value) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append(String.valueOf(value));
     }
 
     @Override
-    public void writeObject(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, Object value) throws IOException
+    public void writeObject(AppendableSerialContext context, String attributeName, Object value) throws IOException
     {
         //todo
     }
 
     @Override
-    public void writeLink(MithraObject reladomoObject, AppendableSerialContext context, String linkName, Attribute[] dependentAttributes) throws IOException
+    public void writeLink(AppendableSerialContext context, String linkName, Attribute[] dependentAttributes) throws IOException
     {
         //todo
     }
 
     @Override
-    public void writeNull(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, Class type) throws IOException
+    public void writeNull(AppendableSerialContext context, String attributeName, Class type) throws IOException
     {
         startField(context, attributeName);
         context.getAppendable().append("null");
@@ -191,19 +191,19 @@ public class TrivialJsonSerialWriter implements SerialWriter<AppendableSerialCon
     }
 
     @Override
-    public void startRelatedObject(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
+    public void startRelatedObject(AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
     {
         startField(context, attributeName);
     }
 
     @Override
-    public void endRelatedObject(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
+    public void endRelatedObject(AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
     {
 
     }
 
     @Override
-    public void startRelatedReladomoList(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
+    public void startRelatedReladomoList(AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
     {
         startField(context, attributeName);
         context.startObject();
@@ -211,7 +211,7 @@ public class TrivialJsonSerialWriter implements SerialWriter<AppendableSerialCon
     }
 
     @Override
-    public void endRelatedReladomoList(MithraObject reladomoObject, AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
+    public void endRelatedReladomoList(AppendableSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
     {
         context.getAppendable().append('}');
         context.endObject();
@@ -233,37 +233,37 @@ public class TrivialJsonSerialWriter implements SerialWriter<AppendableSerialCon
     }
 
     @Override
-    public void startAttributes(MithraObject reladomoObject, AppendableSerialContext context, int size) throws IOException
+    public void startAttributes(AppendableSerialContext context, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endAttributes(MithraObject reladomoObject, AppendableSerialContext context) throws IOException
+    public void endAttributes(AppendableSerialContext context) throws IOException
     {
 
     }
 
     @Override
-    public void startRelationships(MithraObject reladomoObject, AppendableSerialContext context, int size) throws IOException
+    public void startRelationships(AppendableSerialContext context, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endRelationships(MithraObject reladomoObject, AppendableSerialContext context) throws IOException
+    public void endRelationships(AppendableSerialContext context) throws IOException
     {
 
     }
 
     @Override
-    public void startLinks(MithraObject reladomoObject, AppendableSerialContext appendableSerialContext, int size) throws IOException
+    public void startLinks(AppendableSerialContext appendableSerialContext, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endLinks(MithraObject reladomoObject, AppendableSerialContext appendableSerialContext) throws IOException
+    public void endLinks(AppendableSerialContext appendableSerialContext) throws IOException
     {
 
     }
@@ -335,5 +335,17 @@ public class TrivialJsonSerialWriter implements SerialWriter<AppendableSerialCon
     public void endReladomoListElements(MithraList reladomoList, AppendableSerialContext context) throws IOException
     {
         context.getAppendable().append(']');
+    }
+
+    @Override
+    public void startListAnnotatedMethods(MithraList reladomoList, AppendableSerialContext context, int numberOfAnnotatedMethods)
+    {
+
+    }
+
+    @Override
+    public void endListAnnotatedMethods(MithraList reladomoList, AppendableSerialContext context)
+    {
+
     }
 }

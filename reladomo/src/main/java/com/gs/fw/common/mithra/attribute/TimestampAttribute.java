@@ -20,7 +20,6 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.TimestampAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorTimestamp;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorTimestamp;
@@ -506,6 +505,6 @@ public abstract class TimestampAttribute<Owner> extends NonPrimitiveAttribute<Ow
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
-        writer.writeTimestamp((MithraObject) reladomoObject, context, this.getAttributeName(), this.timestampValueOf(reladomoObject));
+        writer.writeTimestamp(context, this.getAttributeName(), this.timestampValueOf(reladomoObject));
     }
 }

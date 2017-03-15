@@ -680,6 +680,6 @@ public abstract class DoubleAttribute<T> extends PrimitiveNumericAttribute<T, Do
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeDouble((MithraObject) reladomoObject, context, this.getAttributeName(), this.doubleValueOf(reladomoObject));
+        writer.writeDouble(context, this.getAttributeName(), this.doubleValueOf(reladomoObject));
     }
 }

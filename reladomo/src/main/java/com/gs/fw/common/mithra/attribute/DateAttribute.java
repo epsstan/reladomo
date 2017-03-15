@@ -20,7 +20,6 @@ package com.gs.fw.common.mithra.attribute;
 import com.gs.fw.common.mithra.AggregateData;
 import com.gs.fw.common.mithra.MithraBusinessException;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.aggregate.attribute.DateAggregateAttribute;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MaxCalculatorDate;
 import com.gs.fw.common.mithra.attribute.calculator.aggregateFunction.MinCalculatorDate;
@@ -255,6 +254,6 @@ public abstract class DateAttribute<Owner> extends NonPrimitiveAttribute<Owner, 
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
-        writer.writeDate((MithraObject) reladomoObject, context, this.getAttributeName(), this.dateValueOf(reladomoObject));
+        writer.writeDate(context, this.getAttributeName(), this.dateValueOf(reladomoObject));
     }
 }

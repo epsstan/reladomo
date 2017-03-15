@@ -687,7 +687,7 @@ public abstract class Attribute<Owner, V> implements com.gs.fw.finder.Attribute<
     {
         if (this.isAttributeNull(reladomoObject))
         {
-            writer.writeNull((MithraObject) reladomoObject, context, this.getAttributeName(), this.valueType());
+            writer.writeNull(context, this.getAttributeName(), this.valueType());
         }
         else
         {

@@ -58,103 +58,103 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
 
 
     @Override
-    public void writeBoolean(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, boolean value)
+    public void writeBoolean(GsonRelodomoSerialContext context, String attributeName, boolean value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeByte(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, byte value)
+    public void writeByte(GsonRelodomoSerialContext context, String attributeName, byte value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeShort(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, short value)
+    public void writeShort(GsonRelodomoSerialContext context, String attributeName, short value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeInt(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, int value)
+    public void writeInt(GsonRelodomoSerialContext context, String attributeName, int value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeLong(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, long value)
+    public void writeLong(GsonRelodomoSerialContext context, String attributeName, long value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeChar(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, char value)
+    public void writeChar(GsonRelodomoSerialContext context, String attributeName, char value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeFloat(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, float value)
+    public void writeFloat(GsonRelodomoSerialContext context, String attributeName, float value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeDouble(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, double value)
+    public void writeDouble(GsonRelodomoSerialContext context, String attributeName, double value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeByteArray(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, byte[] value)
+    public void writeByteArray(GsonRelodomoSerialContext context, String attributeName, byte[] value)
     {
         context.getCurrentResultAsObject().add(attributeName, context.getGsonContext().serialize(value));
     }
 
     @Override
-    public void writeBigDecimal(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, BigDecimal value)
+    public void writeBigDecimal(GsonRelodomoSerialContext context, String attributeName, BigDecimal value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeTimestamp(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Timestamp value)
+    public void writeTimestamp(GsonRelodomoSerialContext context, String attributeName, Timestamp value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, timestampToJson(value));
     }
 
     @Override
-    public void writeDate(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Date value)
+    public void writeDate(GsonRelodomoSerialContext context, String attributeName, Date value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, dateToJson(value));
     }
 
     @Override
-    public void writeString(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, String value)
+    public void writeString(GsonRelodomoSerialContext context, String attributeName, String value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value);
     }
 
     @Override
-    public void writeTime(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Time value)
+    public void writeTime(GsonRelodomoSerialContext context, String attributeName, Time value)
     {
         context.getCurrentResultAsObject().addProperty(attributeName, value.toString());
     }
 
     @Override
-    public void writeObject(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Object value)
+    public void writeObject(GsonRelodomoSerialContext context, String attributeName, Object value)
     {
         context.getCurrentResultAsObject().add(attributeName, context.getGsonContext().serialize(value));
     }
 
     @Override
-    public void writeLink(MithraObject reladomoObject, GsonRelodomoSerialContext context, String linkName, Attribute[] dependentAttributes)
+    public void writeLink(GsonRelodomoSerialContext context, String linkName, Attribute[] dependentAttributes)
     {
         //todo implement link
     }
 
     @Override
-    public void writeNull(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, Class type)
+    public void writeNull(GsonRelodomoSerialContext context, String attributeName, Class type)
     {
         context.getCurrentResultAsObject().add(attributeName, JsonNull.INSTANCE);
     }
@@ -172,24 +172,24 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     }
 
     @Override
-    public void startRelatedObject(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value)
+    public void startRelatedObject(GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value)
     {
         context.pushNewObject(attributeName);
     }
 
     @Override
-    public void endRelatedObject(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value)
+    public void endRelatedObject(GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value)
     {
     }
 
     @Override
-    public void startRelatedReladomoList(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
+    public void startRelatedReladomoList(GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
     {
         context.pushNewObject(attributeName);
     }
 
     @Override
-    public void endRelatedReladomoList(MithraObject reladomoObject, GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
+    public void endRelatedReladomoList(GsonRelodomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList)
     {
         context.pop();
     }
@@ -207,37 +207,37 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     }
 
     @Override
-    public void startAttributes(MithraObject reladomoObject, GsonRelodomoSerialContext context, int size)
+    public void startAttributes(GsonRelodomoSerialContext context, int size)
     {
 
     }
 
     @Override
-    public void endAttributes(MithraObject reladomoObject, GsonRelodomoSerialContext context)
+    public void endAttributes(GsonRelodomoSerialContext context)
     {
 
     }
 
     @Override
-    public void startRelationships(MithraObject reladomoObject, GsonRelodomoSerialContext context, int size)
+    public void startRelationships(GsonRelodomoSerialContext context, int size)
     {
 
     }
 
     @Override
-    public void endRelationships(MithraObject reladomoObject, GsonRelodomoSerialContext context)
+    public void endRelationships(GsonRelodomoSerialContext context)
     {
 
     }
 
     @Override
-    public void startLinks(MithraObject reladomoObject, GsonRelodomoSerialContext gsonRelodomoSerialContext, int size)
+    public void startLinks(GsonRelodomoSerialContext gsonRelodomoSerialContext, int size)
     {
 
     }
 
     @Override
-    public void endLinks(MithraObject reladomoObject, GsonRelodomoSerialContext gsonRelodomoSerialContext)
+    public void endLinks(GsonRelodomoSerialContext gsonRelodomoSerialContext)
     {
 
     }
@@ -300,5 +300,17 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     public void endReladomoListElements(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
         context.pop();
+    }
+
+    @Override
+    public void startListAnnotatedMethods(MithraList reladomoList, GsonRelodomoSerialContext context, int numberOfAnnotatedMethods)
+    {
+
+    }
+
+    @Override
+    public void endListAnnotatedMethods(MithraList reladomoList, GsonRelodomoSerialContext context)
+    {
+
     }
 }

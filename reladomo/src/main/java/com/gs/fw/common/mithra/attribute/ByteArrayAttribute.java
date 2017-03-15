@@ -19,7 +19,6 @@ package com.gs.fw.common.mithra.attribute;
 
 import com.gs.fw.common.mithra.AggregateAttribute;
 import com.gs.fw.common.mithra.MithraDataObject;
-import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.update.AttributeUpdateWrapper;
 import com.gs.fw.common.mithra.attribute.update.ByteArrayUpdateWrapper;
 import com.gs.fw.common.mithra.databasetype.DatabaseType;
@@ -403,6 +402,6 @@ public abstract class ByteArrayAttribute<Owner> extends NonPrimitiveAttribute<Ow
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, Owner reladomoObject) throws IOException
     {
-        writer.writeByteArray((MithraObject) reladomoObject, context, this.getAttributeName(), this.byteArrayValueOf(reladomoObject));
+        writer.writeByteArray(context, this.getAttributeName(), this.byteArrayValueOf(reladomoObject));
     }
 }

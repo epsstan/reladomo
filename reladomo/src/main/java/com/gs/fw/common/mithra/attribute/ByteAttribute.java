@@ -605,6 +605,6 @@ public abstract class ByteAttribute<T> extends PrimitiveNumericAttribute<T, Byte
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeByte((MithraObject) reladomoObject, context, this.getAttributeName(), this.byteValueOf(reladomoObject));
+        writer.writeByte(context, this.getAttributeName(), this.byteValueOf(reladomoObject));
     }
 }

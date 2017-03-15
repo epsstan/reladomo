@@ -615,6 +615,6 @@ public abstract class ShortAttribute<T> extends PrimitiveNumericAttribute<T, Sho
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeShort((MithraObject) reladomoObject, context, this.getAttributeName(), this.shortValueOf(reladomoObject));
+        writer.writeShort(context, this.getAttributeName(), this.shortValueOf(reladomoObject));
     }
 }

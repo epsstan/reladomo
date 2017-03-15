@@ -685,6 +685,6 @@ public abstract class BigDecimalAttribute<T> extends NonPrimitiveAttribute<T, Bi
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeBigDecimal((MithraObject) reladomoObject, context, this.getAttributeName(), this.bigDecimalValueOf(reladomoObject));
+        writer.writeBigDecimal(context, this.getAttributeName(), this.bigDecimalValueOf(reladomoObject));
     }
 }

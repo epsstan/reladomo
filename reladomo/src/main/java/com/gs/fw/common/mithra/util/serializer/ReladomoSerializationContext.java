@@ -21,7 +21,6 @@ import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.MithraTransactionalObject;
 import com.gs.fw.common.mithra.attribute.*;
 import com.gs.fw.common.mithra.finder.AbstractRelatedFinder;
-import com.gs.fw.common.mithra.finder.Mapper;
 import com.gs.fw.common.mithra.util.Time;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +29,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 public class ReladomoSerializationContext
 {
@@ -45,6 +43,7 @@ public class ReladomoSerializationContext
 
     protected final SerializationConfig serializationConfig;
     protected final SerialWriter writer;
+    protected Object currentObjectBeingSerialized;
 
     protected SerializationNode currentNode;
 
@@ -60,6 +59,8 @@ public class ReladomoSerializationContext
         try
         {
             writer.startReladomoObject(reladomoObject, this);
+            Object previousObject = this.currentObjectBeingSerialized;
+            this.currentObjectBeingSerialized = reladomoObject;
 
             if (this.serializationConfig.serializeMetaData())
             {
@@ -68,17 +69,17 @@ public class ReladomoSerializationContext
                 writer.writeMetadataEnd(reladomoObject, this);
             }
 
-            writer.startAttributes(reladomoObject, this, this.currentNode.getAttributes().size());
+            writer.startAttributes(this, this.currentNode.getAttributes().size());
             serializeAttributes(reladomoObject);
-            writer.endAttributes(reladomoObject, this);
+            writer.endAttributes(this);
 
-            writer.startRelationships(reladomoObject, this, this.currentNode.getChildren().size());
+            writer.startRelationships(this, this.currentNode.getChildren().size());
             serializeRelationships(reladomoObject);
-            writer.endRelationships(reladomoObject, this);
+            writer.endRelationships(this);
 
-            writer.startLinks(reladomoObject, this, this.currentNode.getLinks().size());
+            writer.startLinks(this, this.currentNode.getLinks().size());
             serializeLinks(reladomoObject);
-            writer.endLinks(reladomoObject, this);
+            writer.endLinks(this);
 
             List<Method> annotatedMethods = getAnnotatedMethods(reladomoObject);
             writer.startAnnotatedMethod(reladomoObject, this, annotatedMethods.size());
@@ -86,6 +87,7 @@ public class ReladomoSerializationContext
             writer.endAnnotatedMethod(reladomoObject, this);
 
             writer.endReladomoObject(reladomoObject, this);
+            this.currentObjectBeingSerialized = previousObject;
         }
         catch (Exception e)
         {
@@ -93,7 +95,7 @@ public class ReladomoSerializationContext
         }
     }
 
-    protected List<Method> getAnnotatedMethods(MithraObject reladomoObject)
+    protected List<Method> getAnnotatedMethods(Object reladomoObject)
     {
         return this.serializationConfig.getAnnotatedMethods(reladomoObject.getClass());
     }
@@ -104,7 +106,7 @@ public class ReladomoSerializationContext
         for(int i=0;i<links.size();i++)
         {
             SerializationNode linkNode = links.get(i);
-            writer.writeLink(reladomoObject, this, linkNode.getRelatedFinder().getRelationshipName(), linkNode.getLinkAttributes());
+            writer.writeLink(this, linkNode.getRelatedFinder().getRelationshipName(), linkNode.getLinkAttributes());
         }
     }
 
@@ -118,7 +120,7 @@ public class ReladomoSerializationContext
                 Object methodResult = method.invoke(reladomoObject, null);
                 if (methodResult == null)
                 {
-                    writer.writeNull(reladomoObject, this, getMethodAttributeName(method), method.getReturnType());
+                    writer.writeNull(this, getMethodAttributeName(method), method.getReturnType());
                 }
                 else
                 {
@@ -136,67 +138,95 @@ public class ReladomoSerializationContext
         }
     }
 
+    protected void serializeAnnotatedListMethods(Object list, List<Method> annotatedMethods) throws Exception
+    {
+        for(int i=0;i<annotatedMethods.size();i++)
+        {
+            Method method = annotatedMethods.get(i);
+            try
+            {
+                Object methodResult = method.invoke(list, null);
+                if (methodResult == null)
+                {
+                    writer.writeNull(this, getMethodAttributeName(method), method.getReturnType());
+                }
+                else
+                {
+                    writeByType(null, methodResult, getMethodAttributeName(method));
+                }
+            }
+            catch (IllegalAccessException e)
+            {
+                throw new RuntimeException("Could not call method "+method.getName()+" on class "+list.getClass().getName(), e);
+            }
+            catch (InvocationTargetException e)
+            {
+                throw new RuntimeException("Could not call method "+method.getName()+" on class "+list.getClass().getName(), e);
+            }
+        }
+    }
+
     protected void writeByType(MithraObject reladomoObject, Object methodResult, String methodAttributeName) throws Exception
     {
         if (methodResult instanceof Boolean)
         {
-            writer.writeBoolean(reladomoObject, this, methodAttributeName, ((Boolean) methodResult));
+            writer.writeBoolean(this, methodAttributeName, ((Boolean) methodResult));
         }
         else if (methodResult instanceof Byte)
         {
-            writer.writeByte(reladomoObject, this, methodAttributeName, ((Byte) methodResult));
+            writer.writeByte(this, methodAttributeName, ((Byte) methodResult));
         }
         else if (methodResult instanceof Short)
         {
-            writer.writeShort(reladomoObject, this, methodAttributeName, ((Short) methodResult));
+            writer.writeShort(this, methodAttributeName, ((Short) methodResult));
         }
         else if (methodResult instanceof Integer)
         {
-            writer.writeInt(reladomoObject, this, methodAttributeName, ((Integer) methodResult));
+            writer.writeInt(this, methodAttributeName, ((Integer) methodResult));
         }
         else if (methodResult instanceof Long)
         {
-            writer.writeByte(reladomoObject, this, methodAttributeName, ((Byte) methodResult));
+            writer.writeByte(this, methodAttributeName, ((Byte) methodResult));
         }
         else if (methodResult instanceof Character)
         {
-            writer.writeChar(reladomoObject, this, methodAttributeName, ((Character) methodResult));
+            writer.writeChar(this, methodAttributeName, ((Character) methodResult));
         }
         else if (methodResult instanceof Float)
         {
-            writer.writeFloat(reladomoObject, this, methodAttributeName, ((Float) methodResult));
+            writer.writeFloat(this, methodAttributeName, ((Float) methodResult));
         }
         else if (methodResult instanceof Double)
         {
-            writer.writeDouble(reladomoObject, this, methodAttributeName, ((Double) methodResult));
+            writer.writeDouble(this, methodAttributeName, ((Double) methodResult));
         }
         else if (methodResult instanceof byte[])
         {
-            writer.writeByteArray(reladomoObject, this, methodAttributeName, ((byte[]) methodResult));
+            writer.writeByteArray(this, methodAttributeName, ((byte[]) methodResult));
         }
         else if (methodResult instanceof BigDecimal)
         {
-            writer.writeBigDecimal(reladomoObject, this, methodAttributeName, ((BigDecimal) methodResult));
+            writer.writeBigDecimal(this, methodAttributeName, ((BigDecimal) methodResult));
         }
         else if (methodResult instanceof Timestamp)
         {
-            writer.writeTimestamp(reladomoObject, this, methodAttributeName, ((Timestamp) methodResult));
+            writer.writeTimestamp(this, methodAttributeName, ((Timestamp) methodResult));
         }
         else if (methodResult instanceof Date)
         {
-            writer.writeDate(reladomoObject, this, methodAttributeName, ((Date) methodResult));
+            writer.writeDate(this, methodAttributeName, ((Date) methodResult));
         }
         else if (methodResult instanceof String)
         {
-            writer.writeString(reladomoObject, this, methodAttributeName, ((String) methodResult));
+            writer.writeString(this, methodAttributeName, ((String) methodResult));
         }
         else if (methodResult instanceof Time)
         {
-            writer.writeTime(reladomoObject, this, methodAttributeName, ((Time) methodResult));
+            writer.writeTime(this, methodAttributeName, ((Time) methodResult));
         }
         else
         {
-            writer.writeObject(reladomoObject, this, methodAttributeName, methodResult);
+            writer.writeObject(this, methodAttributeName, methodResult);
         }
     }
 
@@ -224,21 +254,21 @@ public class ReladomoSerializationContext
                 MithraObject related = (MithraObject) relatedFinder.valueOf(reladomoObject);
                 if (related == null)
                 {
-                    this.writer.writeNull(reladomoObject, this, relatedFinder.getRelationshipName(), serializationNode.getRelatedClass());
+                    this.writer.writeNull(this, relatedFinder.getRelationshipName(), serializationNode.getRelatedClass());
                 }
                 else
                 {
-                    this.writer.startRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
+                    this.writer.startRelatedObject(this, relatedFinder.getRelationshipName(), relatedFinder, related);
                     this.serializeReladomoObject(related);
-                    this.writer.endRelatedObject(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, related);
+                    this.writer.endRelatedObject(this, relatedFinder.getRelationshipName(), relatedFinder, related);
                 }
             }
             else
             {
                 MithraList relatedList = (MithraList) relatedFinder.valueOf(reladomoObject);
-                this.writer.startRelatedReladomoList(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
+                this.writer.startRelatedReladomoList(this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
                 this.serializeListComponents(relatedList);
-                this.writer.endRelatedReladomoList(reladomoObject, this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
+                this.writer.endRelatedReladomoList(this, relatedFinder.getRelationshipName(), relatedFinder, relatedList);
             }
         }
         this.currentNode = pushedNode;
@@ -255,7 +285,7 @@ public class ReladomoSerializationContext
 
     protected void serializeClassMetadata(MithraObject reladomoObject) throws Exception
     {
-        writer.writeString(reladomoObject, this, RELADOMO_CLASS_NAME, reladomoObject.getClass().getName());
+        writer.writeString(this, RELADOMO_CLASS_NAME, reladomoObject.getClass().getName());
         byte state;
         if (reladomoObject instanceof MithraTransactionalObject)
         {
@@ -277,7 +307,7 @@ public class ReladomoSerializationContext
         {
             state = READ_ONLY_STATE;
         }
-        writer.writeByte(reladomoObject, this, RELADOMO_STATE, state);
+        writer.writeByte(this, RELADOMO_STATE, state);
     }
 
     public void serializeReladomoList(MithraList reladomoList)
@@ -298,13 +328,20 @@ public class ReladomoSerializationContext
 
     protected void serializeListComponents(MithraList reladomoList) throws Exception
     {
+        Object previousList = this.currentObjectBeingSerialized;
+        this.currentObjectBeingSerialized = reladomoList;
         if (this.serializationConfig.serializeMetaData())
         {
             writer.startReladomoListMetatdata(reladomoList, this);
-            writer.writeString(null, this, RELADOMO_CLASS_NAME, getCurrentClassName());
-            writer.writeInt(null, this, RELADOMO_LIST_SIZE, reladomoList.size());
+            writer.writeString(this, RELADOMO_CLASS_NAME, getCurrentClassName());
+            writer.writeInt(this, RELADOMO_LIST_SIZE, reladomoList.size());
             writer.endReladomoListMedatadata(reladomoList, this);
         }
+
+        List<Method> annotatedMethods = getAnnotatedMethods(reladomoList);
+        writer.startListAnnotatedMethods(reladomoList, this, annotatedMethods.size());
+        serializeAnnotatedListMethods(reladomoList, annotatedMethods);
+        writer.endListAnnotatedMethods(reladomoList, this);
 
         writer.startReladomoListElements(reladomoList, this);
         for(int i=0;i<reladomoList.size();i++)
@@ -315,6 +352,7 @@ public class ReladomoSerializationContext
             writer.endReladomoListItem(reladomoList, this, i, reladomoObject);
         }
         writer.endReladomoListElements(reladomoList, this);
+        this.currentObjectBeingSerialized = previousList;
     }
 
     protected String getCurrentClassName()
@@ -323,4 +361,8 @@ public class ReladomoSerializationContext
         return finderClassName.substring(0, finderClassName.length() - "Finder".length());
     }
 
+    public Object getCurrentObjectBeingSerialized()
+    {
+        return currentObjectBeingSerialized;
+    }
 }

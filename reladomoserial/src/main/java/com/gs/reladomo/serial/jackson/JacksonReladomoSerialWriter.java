@@ -31,103 +31,103 @@ import java.util.Date;
 public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomoSerialContext>
 {
     @Override
-    public void writeBoolean(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, boolean value) throws IOException
+    public void writeBoolean(JacksonReladomoSerialContext context, String attributeName, boolean value) throws IOException
     {
         context.getJgen().writeBooleanField(attributeName, value);
     }
 
     @Override
-    public void writeByte(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, byte value) throws IOException
+    public void writeByte(JacksonReladomoSerialContext context, String attributeName, byte value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeShort(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, short value) throws IOException
+    public void writeShort(JacksonReladomoSerialContext context, String attributeName, short value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeInt(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, int value) throws IOException
+    public void writeInt(JacksonReladomoSerialContext context, String attributeName, int value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeLong(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, long value) throws IOException
+    public void writeLong(JacksonReladomoSerialContext context, String attributeName, long value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeChar(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, char value) throws IOException
+    public void writeChar(JacksonReladomoSerialContext context, String attributeName, char value) throws IOException
     {
         context.getJgen().writeStringField(attributeName, ""+value);
     }
 
     @Override
-    public void writeFloat(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, float value) throws IOException
+    public void writeFloat(JacksonReladomoSerialContext context, String attributeName, float value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeDouble(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, double value) throws IOException
+    public void writeDouble(JacksonReladomoSerialContext context, String attributeName, double value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeByteArray(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, byte[] value) throws IOException
+    public void writeByteArray(JacksonReladomoSerialContext context, String attributeName, byte[] value) throws IOException
     {
         context.getJgen().writeBinaryField(attributeName, value);
     }
 
     @Override
-    public void writeBigDecimal(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, BigDecimal value) throws IOException
+    public void writeBigDecimal(JacksonReladomoSerialContext context, String attributeName, BigDecimal value) throws IOException
     {
         context.getJgen().writeNumberField(attributeName, value);
     }
 
     @Override
-    public void writeTimestamp(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, Timestamp value) throws IOException
+    public void writeTimestamp(JacksonReladomoSerialContext context, String attributeName, Timestamp value) throws IOException
     {
         context.getJgen().writeObjectField(attributeName, value);
     }
 
     @Override
-    public void writeDate(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, Date value) throws IOException
+    public void writeDate(JacksonReladomoSerialContext context, String attributeName, Date value) throws IOException
     {
         context.getJgen().writeObjectField(attributeName, value);
     }
 
     @Override
-    public void writeString(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, String value) throws IOException
+    public void writeString(JacksonReladomoSerialContext context, String attributeName, String value) throws IOException
     {
         context.getJgen().writeStringField(attributeName, value);
     }
 
     @Override
-    public void writeTime(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, Time value) throws IOException
+    public void writeTime(JacksonReladomoSerialContext context, String attributeName, Time value) throws IOException
     {
         context.getJgen().writeStringField(attributeName, value.toString());
     }
 
     @Override
-    public void writeObject(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, Object value) throws IOException
+    public void writeObject(JacksonReladomoSerialContext context, String attributeName, Object value) throws IOException
     {
         context.getJgen().writeObjectField(attributeName, value);
     }
 
     @Override
-    public void writeLink(MithraObject reladomoObject, JacksonReladomoSerialContext context, String linkName, Attribute[] dependentAttributes) throws IOException
+    public void writeLink(JacksonReladomoSerialContext context, String linkName, Attribute[] dependentAttributes) throws IOException
     {
         //todo
     }
 
     @Override
-    public void writeNull(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, Class type) throws IOException
+    public void writeNull(JacksonReladomoSerialContext context, String attributeName, Class type) throws IOException
     {
         context.getJgen().writeNullField(attributeName);
     }
@@ -145,25 +145,25 @@ public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomo
     }
 
     @Override
-    public void startRelatedObject(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
+    public void startRelatedObject(JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
     {
         context.getJgen().writeFieldName(attributeName);
     }
 
     @Override
-    public void endRelatedObject(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
+    public void endRelatedObject(JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraObject value) throws IOException
     {
     }
 
     @Override
-    public void startRelatedReladomoList(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
+    public void startRelatedReladomoList(JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
     {
         context.getJgen().writeFieldName(attributeName);
         context.getJgen().writeStartObject();
     }
 
     @Override
-    public void endRelatedReladomoList(MithraObject reladomoObject, JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
+    public void endRelatedReladomoList(JacksonReladomoSerialContext context, String attributeName, AbstractRelatedFinder finder, MithraList valueList) throws IOException
     {
         context.getJgen().writeEndObject();
     }
@@ -181,37 +181,37 @@ public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomo
     }
 
     @Override
-    public void startAttributes(MithraObject reladomoObject, JacksonReladomoSerialContext context, int size) throws IOException
+    public void startAttributes(JacksonReladomoSerialContext context, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endAttributes(MithraObject reladomoObject, JacksonReladomoSerialContext context) throws IOException
+    public void endAttributes(JacksonReladomoSerialContext context) throws IOException
     {
 
     }
 
     @Override
-    public void startRelationships(MithraObject reladomoObject, JacksonReladomoSerialContext context, int size) throws IOException
+    public void startRelationships(JacksonReladomoSerialContext context, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endRelationships(MithraObject reladomoObject, JacksonReladomoSerialContext context) throws IOException
+    public void endRelationships(JacksonReladomoSerialContext context) throws IOException
     {
 
     }
 
     @Override
-    public void startLinks(MithraObject reladomoObject, JacksonReladomoSerialContext jacksonReladomoSerialContext, int size) throws IOException
+    public void startLinks(JacksonReladomoSerialContext jacksonReladomoSerialContext, int size) throws IOException
     {
 
     }
 
     @Override
-    public void endLinks(MithraObject reladomoObject, JacksonReladomoSerialContext jacksonReladomoSerialContext) throws IOException
+    public void endLinks(JacksonReladomoSerialContext jacksonReladomoSerialContext) throws IOException
     {
 
     }
@@ -274,5 +274,17 @@ public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomo
     public void endReladomoListElements(MithraList reladomoList, JacksonReladomoSerialContext context) throws IOException
     {
         context.getJgen().writeEndArray();
+    }
+
+    @Override
+    public void startListAnnotatedMethods(MithraList reladomoList, JacksonReladomoSerialContext context, int numberOfAnnotatedMethods)
+    {
+
+    }
+
+    @Override
+    public void endListAnnotatedMethods(MithraList reladomoList, JacksonReladomoSerialContext context)
+    {
+
     }
 }

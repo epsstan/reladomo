@@ -581,6 +581,6 @@ public abstract class FloatAttribute<T> extends PrimitiveNumericAttribute<T, Flo
     @Override
     protected void zWriteNonNullSerial(ReladomoSerializationContext context, SerialWriter writer, T reladomoObject) throws IOException
     {
-        writer.writeFloat((MithraObject) reladomoObject, context, this.getAttributeName(), this.floatValueOf(reladomoObject));
+        writer.writeFloat(context, this.getAttributeName(), this.floatValueOf(reladomoObject));
     }
 }
