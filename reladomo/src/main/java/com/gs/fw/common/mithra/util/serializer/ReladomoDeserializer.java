@@ -285,17 +285,17 @@ public class ReladomoDeserializer<T extends MithraObject>
         partialDeserializeds.add(this.data.partial);
     }
 
-    public T getDeserializationResultAsObject()
-    {
-        resolveStuff();
-        //todo
-    }
-
-    public MithraList<T> getDeserializationResultAsList()
-    {
-        resolveStuff();
-        //todo
-    }
+//    public T getDeserializationResultAsObject()
+//    {
+//        resolveStuff();
+//        //todo
+//    }
+//
+//    public MithraList<T> getDeserializationResultAsList()
+//    {
+//        resolveStuff();
+//        //todo
+//    }
 
     protected static class StackableData
     {
@@ -588,6 +588,13 @@ public class ReladomoDeserializer<T extends MithraObject>
             deserializer.data.partial.storeRelated(deserializer.data.related, null);
             deserializer.data.currentState = InObjectState.INSTANCE;
         }
+    }
+
+    protected static class InAnnotatedMethod extends State
+    {
+        private static final InAnnotatedMethod INSTANCE = new InAnnotatedMethod();
+
+        //todo
     }
 
     protected static class InAttributeState extends State
