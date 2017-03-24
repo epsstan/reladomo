@@ -140,7 +140,7 @@ public class SerializationConfig
         {
             return ListFactory.EMPTY_LIST;
         }
-        List<Method> methods = AnnotatedMethodCache.getInstance().get(clazz, this.annotatedContextNames);
+        List<Method> methods = SerializableMethodCache.getInstance().get(clazz, this.annotatedContextNames);
         if (excludedMethods != null)
         {
             List<Method> filtered = FastList.newList(methods);

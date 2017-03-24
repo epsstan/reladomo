@@ -40,6 +40,7 @@ public class ReladomoSerializationContext
     public static final byte READ_ONLY_STATE = 1;
     public static final byte DETACHED_STATE = 2;
     public static final byte IN_MEMORY_STATE = 3;
+    public static final byte DELETED_OR_TERMINATED_STATE = 4;
 
     protected final SerializationConfig serializationConfig;
     protected final SerialWriter writer;

@@ -26,7 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-public class AnnotatedMethodCache
+public class SerializableMethodCache
 {
     private static final Comparator<? super Method> METHOD_NAME_COMPARATOR = new Comparator<Method>()
     {
@@ -36,17 +36,17 @@ public class AnnotatedMethodCache
             return o1.getName().compareTo(o2.getName());
         }
     };
-    private static Logger logger = LoggerFactory.getLogger(AnnotatedMethodCache.class.getName());
-    private static AnnotatedMethodCache ourInstance = new AnnotatedMethodCache();
+    private static Logger logger = LoggerFactory.getLogger(SerializableMethodCache.class.getName());
+    private static SerializableMethodCache ourInstance = new SerializableMethodCache();
 
-    public static AnnotatedMethodCache getInstance()
+    public static SerializableMethodCache getInstance()
     {
         return ourInstance;
     }
 
     private ConcurrentHashMap<ClassAndContextName, List<Method>> cache = ConcurrentHashMap.newMap();
 
-    private AnnotatedMethodCache()
+    private SerializableMethodCache()
     {
     }
 
@@ -81,12 +81,14 @@ public class AnnotatedMethodCache
                             if (method.getReturnType().equals(Void.TYPE))
                             {
                                 logger.warn("Incorrect method annotation in class " + clazz.getName() + " method " + method.getName() + " @ReladomoSerialize can only be used with methods that return something");
-                            } else
+                            }
+                            else
                             {
                                 result.add(method);
                                 break;
                             }
-                        } else
+                        }
+                        else
                         {
                             logger.warn("Incorrect method annotation in class " + clazz.getName() + " method " + method.getName() + " @ReladomoSerialize can only be used with methods that have no parameters");
                         }
