@@ -16,27 +16,53 @@
 
 package com.gs.fw.common.mithra.util.serializer;
 
+import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 import com.gs.fw.common.mithra.MithraDataObject;
+import com.gs.fw.common.mithra.MithraManagerProvider;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.AsOfAttribute;
 import com.gs.fw.common.mithra.attribute.Attribute;
 import com.gs.fw.common.mithra.finder.AbstractRelatedFinder;
 import com.gs.fw.common.mithra.finder.RelatedFinder;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
+import java.util.List;
 
 public class DeserializationClassMetaData
 {
+    private static final Class[][] CONSTRUCTOR_ARGS = new Class[2][];
+    private static final Object[] NO_ARGS = new Object[0];
+
     private final RelatedFinder relatedFinder;
+    private final boolean isTemporal;
+    private final int numTempralArgs;
     private final Class businessClass;
     private final Class dataClass;
     private final ObjectIntHashMap<Attribute> attributePosition = new ObjectIntHashMap<Attribute>();
+    private final AsOfAttribute businessDateAttribute;
+    private final AsOfAttribute processingDateAttribute;
+    private final Attribute sourceAttribute;
+    private final Attribute[] pkAttributesNoSource;
+    private Constructor businessClassConstructor;
 
-    public DeserializationClassMetaData(RelatedFinder relatedFinder) throws RuntimeException
+    static
+    {
+        CONSTRUCTOR_ARGS[1] = new Class[1];
+        CONSTRUCTOR_ARGS[1][0] = Timestamp.class;
+
+        CONSTRUCTOR_ARGS[2] = new Class[2];
+        CONSTRUCTOR_ARGS[1][0] = Timestamp.class;
+        CONSTRUCTOR_ARGS[1][1] = Timestamp.class;
+    }
+
+    public DeserializationClassMetaData(RelatedFinder relatedFinder)
     {
         this.relatedFinder = ((AbstractRelatedFinder) relatedFinder).zWithoutParentSelector();
-        String finderClassName = relatedFinder.getFinderClassName();
-        String className = finderClassName.substring(0, finderClassName.length() - "Finder".length());
+        String className = getBusinessClassName();
         try
         {
             businessClass = Class.forName(className);
@@ -66,14 +92,77 @@ public class DeserializationClassMetaData
             count++;
         }
         AsOfAttribute[] asOfAttributes = this.relatedFinder.getAsOfAttributes();
-        if (asOfAttributes != null)
+        AsOfAttribute localProc = null;
+        AsOfAttribute localBiz = null;
+        this.isTemporal = asOfAttributes != null;
+        this.numTempralArgs = asOfAttributes != null ? asOfAttributes.length : 0;
+        if (this.isTemporal)
         {
             for(AsOfAttribute attr: asOfAttributes)
             {
                 attributePosition.put(attr, count);
                 count++;
+                if (attr.isProcessingDate())
+                {
+                    localProc = attr;
+                }
+                else
+                {
+                    localBiz = attr;
+                }
             }
         }
+        Attribute[] pks = this.relatedFinder.getPrimaryKeyAttributes();
+        this.sourceAttribute = this.relatedFinder.getSourceAttribute();
+        if (this.sourceAttribute != null)
+        {
+            attributePosition.put(this.sourceAttribute, count);
+            count++;
+            pks = new Attribute[pks.length - 1];
+            List<Attribute> localPks = FastList.newList(pks.length);
+            for(Attribute a: this.relatedFinder.getPrimaryKeyAttributes())
+            {
+                if (!a.equals(sourceAttribute))
+                {
+                    localPks.add(a);
+                }
+            }
+            localPks.toArray(pks);
+        }
+        pkAttributesNoSource = pks;
+        businessDateAttribute = localBiz;
+        processingDateAttribute = localProc;
+        initBusinessObjectConstructor();
+    }
+
+    private void initBusinessObjectConstructor()
+    {
+        try
+        {
+            if (isTemporal)
+            {
+                this.businessClassConstructor = this.businessClass.getConstructor(CONSTRUCTOR_ARGS[this.numTempralArgs]);
+            }
+            else
+            {
+                this.businessClassConstructor = this.businessClass.getConstructor(null);
+            }
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new RuntimeException("Could not find constructor for "+businessClass.getClass().getName());
+        }
+    }
+
+    private String getBusinessClassName()
+    {
+        String finderClassName = relatedFinder.getFinderClassName();
+        return finderClassName.substring(0, finderClassName.length() - "Finder".length());
+    }
+
+    public RelatedFinder getRelatedFinder()
+    {
+        return relatedFinder;
     }
 
     public MithraDataObject constructData() throws DeserializationException
@@ -111,5 +200,79 @@ public class DeserializationClassMetaData
     public int getAttriutePosition(Attribute attribute)
     {
         return attributePosition.getIfAbsent(attribute, -1);
+    }
+
+    public boolean isConfigured()
+    {
+        return MithraManagerProvider.getMithraManager().getConfigManager().isClassConfigured(getBusinessClassName());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.relatedFinder.getFinderClassName().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof DeserializationClassMetaData)
+        {
+            return this.relatedFinder.getFinderClassName().equals(((DeserializationClassMetaData)obj).getRelatedFinder().getFinderClassName());
+        }
+        return false;
+    }
+
+    public AsOfAttribute getBusinessDateAttribute()
+    {
+        return businessDateAttribute;
+    }
+
+    public AsOfAttribute getProcessingDateAttribute()
+    {
+        return processingDateAttribute;
+    }
+
+    public Attribute getSourceAttribute()
+    {
+        return sourceAttribute;
+    }
+
+    public Attribute[] getPrimaryKeyAttributesWithoutSource()
+    {
+        return pkAttributesNoSource;
+    }
+
+    public MithraObject constructObject(Timestamp businessDate, Timestamp processingDate) throws DeserializationException
+    {
+        if (processingDateAttribute != null && processingDate == null)
+        {
+            processingDate = processingDateAttribute.getDefaultDate();
+        }
+        if (businessDateAttribute != null && businessDate == null)
+        {
+            businessDate = businessDateAttribute.getDefaultDate();
+        }
+        try
+        {
+            switch (numTempralArgs)
+            {
+                case 0:
+                    return (MithraObject) businessClassConstructor.newInstance(NO_ARGS);
+                case 1:
+                    if (processingDateAttribute != null)
+                    {
+                        return (MithraObject) businessClassConstructor.newInstance(processingDate);
+                    }
+                    return (MithraObject) businessClassConstructor.newInstance(businessDate);
+                case 2:
+                    return (MithraObject) businessClassConstructor.newInstance(businessDate, processingDate);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new DeserializationException("Could not construct "+businessClass.getClass().getName(), e);
+        }
+        return null; // never gets here.
     }
 }

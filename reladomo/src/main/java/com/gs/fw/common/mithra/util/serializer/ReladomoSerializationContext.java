@@ -37,10 +37,10 @@ public class ReladomoSerializationContext
     public static final String RELADOMO_STATE = RELADOMO_PREFIX + "State";
     public static final String RELADOMO_LIST_SIZE = RELADOMO_PREFIX + "ListSize";
 
-    public static final byte READ_ONLY_STATE = 1;
-    public static final byte DETACHED_STATE = 2;
-    public static final byte IN_MEMORY_STATE = 3;
-    public static final byte DELETED_OR_TERMINATED_STATE = 4;
+    public static final byte READ_ONLY_STATE = 10;
+    public static final byte DETACHED_STATE = 20;
+    public static final byte IN_MEMORY_STATE = 30;
+    public static final byte DELETED_OR_TERMINATED_STATE = 40;
 
     protected final SerializationConfig serializationConfig;
     protected final SerialWriter writer;

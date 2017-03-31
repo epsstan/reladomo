@@ -46,6 +46,8 @@ import java.util.Set;
 public interface MithraObjectPortal
 {
 
+    public boolean isTransactional();
+
     public boolean isPartiallyCached();
 
     public boolean isFullyCached();
