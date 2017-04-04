@@ -16,8 +16,11 @@
 
 package com.gs.fw.common.mithra.util.serializer;
 
+import com.gs.collections.api.block.function.Function;
 import com.gs.collections.impl.list.mutable.FastList;
+import com.gs.collections.impl.map.mutable.ConcurrentHashMap;
 import com.gs.collections.impl.map.mutable.primitive.ObjectIntHashMap;
+import com.gs.collections.impl.set.mutable.UnifiedSet;
 import com.gs.fw.common.mithra.MithraDataObject;
 import com.gs.fw.common.mithra.MithraManagerProvider;
 import com.gs.fw.common.mithra.MithraObject;
@@ -27,15 +30,16 @@ import com.gs.fw.common.mithra.finder.AbstractRelatedFinder;
 import com.gs.fw.common.mithra.finder.RelatedFinder;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 public class DeserializationClassMetaData
 {
     private static final Class[][] CONSTRUCTOR_ARGS = new Class[2][];
     private static final Object[] NO_ARGS = new Object[0];
+    private final Function<? super String, ? extends Method> RELATIONSHIP_SETTER_LOOKUP = new RelationshipSetterLookup();
 
     private final RelatedFinder relatedFinder;
     private final boolean isTemporal;
@@ -48,6 +52,9 @@ public class DeserializationClassMetaData
     private final Attribute sourceAttribute;
     private final Attribute[] pkAttributesNoSource;
     private Constructor businessClassConstructor;
+    private final List<Attribute> settableAttributes = FastList.newList();
+    private final Set<String> dependentRelationshipNames = UnifiedSet.newSet();
+    private ConcurrentHashMap<String, Method> relationshipSetters = new ConcurrentHashMap<String, Method>();
 
     static
     {
@@ -89,6 +96,7 @@ public class DeserializationClassMetaData
         for(Attribute attr: this.relatedFinder.getPersistentAttributes())
         {
             attributePosition.put(attr, count);
+            settableAttributes.add(attr);
             count++;
         }
         AsOfAttribute[] asOfAttributes = this.relatedFinder.getAsOfAttributes();
@@ -118,6 +126,7 @@ public class DeserializationClassMetaData
         {
             attributePosition.put(this.sourceAttribute, count);
             count++;
+            settableAttributes.add(this.sourceAttribute);
             pks = new Attribute[pks.length - 1];
             List<Attribute> localPks = FastList.newList(pks.length);
             for(Attribute a: this.relatedFinder.getPrimaryKeyAttributes())
@@ -133,6 +142,21 @@ public class DeserializationClassMetaData
         businessDateAttribute = localBiz;
         processingDateAttribute = localProc;
         initBusinessObjectConstructor();
+        List<RelatedFinder> dependentRelationshipFinders = this.relatedFinder.getDependentRelationshipFinders();
+        for(int i=0;i<dependentRelationshipFinders.size();i++)
+        {
+            this.dependentRelationshipNames.add(((AbstractRelatedFinder)dependentRelationshipFinders.get(i)).getRelationshipName());
+        }
+    }
+
+    public Set<String> getDependentRelationshipNames()
+    {
+        return dependentRelationshipNames;
+    }
+
+    public Method getRelationshipSetter(String name)
+    {
+        return relationshipSetters.getIfAbsentPutWith(name, RELATIONSHIP_SETTER_LOOKUP, name);
     }
 
     private void initBusinessObjectConstructor()
@@ -152,6 +176,11 @@ public class DeserializationClassMetaData
         {
             throw new RuntimeException("Could not find constructor for "+businessClass.getClass().getName());
         }
+    }
+
+    public List<Attribute> getSettableAttributes()
+    {
+        return settableAttributes;
     }
 
     private String getBusinessClassName()
@@ -274,5 +303,32 @@ public class DeserializationClassMetaData
             throw new DeserializationException("Could not construct "+businessClass.getClass().getName(), e);
         }
         return null; // never gets here.
+    }
+
+    private class RelationshipSetterLookup implements Function<String, Method>
+    {
+        @Override
+        public Method valueOf(String name)
+        {
+            Method[] methods;
+            try
+            {
+                methods = Class.forName(DeserializationClassMetaData.this.getBusinessClassName()).getMethods();
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new RuntimeException("Could not get methods for class "+DeserializationClassMetaData.this.getBusinessClassName(), e);
+            }
+            for(Method m: methods)
+            {
+                if (m.getName().startsWith("set") &&
+                        Character.toLowerCase(m.getName().charAt(3)) == Character.toLowerCase(name.charAt(0))  &&
+                        m.getName().substring(4).equals(name.substring(1)) && m.getParameterTypes().length == 1)
+                {
+                    return m;
+                }
+            }
+            return null;
+        }
     }
 }

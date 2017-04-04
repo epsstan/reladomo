@@ -17,11 +17,17 @@
 package com.gs.fw.common.mithra.util.serializer;
 
 import com.gs.fw.common.mithra.MithraList;
+import com.gs.fw.common.mithra.MithraManagerProvider;
+import com.gs.fw.common.mithra.MithraTransaction;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
 
 public class SerializedList<T extends MithraList>
 {
     private T wrapped;
     private SerializationConfig config;
+    private ReladomoDeserializer deserializer;
 
     public SerializedList(T wrapped, SerializationConfig config)
     {
@@ -35,8 +41,40 @@ public class SerializedList<T extends MithraList>
         this.config = SerializationConfig.byName(configName);
     }
 
+    protected SerializedList(ReladomoDeserializer deserializer) throws DeserializationException
+    {
+        this.deserializer = deserializer;
+        deserializer.checkSingleObjectDeserialized();
+    }
+
     public T getWrapped()
     {
+        if (this.wrapped == null && this.deserializer != null)
+        {
+            MithraTransaction tx = MithraManagerProvider.getMithraManager().getCurrentTransaction();
+            if (tx != null)
+            {
+                tx.registerSynchronization(new Synchronization()
+                {
+                    @Override
+                    public void beforeCompletion()
+                    {
+                        //do nothing
+                    }
+
+                    @Override
+                    public void afterCompletion(int status)
+                    {
+                        if (status != Status.STATUS_COMMITTED && status != Status.STATUS_COMMITTING)
+                        {
+                            wrapped = null;
+                        }
+
+                    }
+                });
+            }
+            this.wrapped = (T) deserializer.getDeserializationResultAsList();
+        }
         return wrapped;
     }
 

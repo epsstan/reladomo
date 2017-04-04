@@ -19,9 +19,9 @@ package com.gs.fw.common.mithra.util.serializer;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.map.mutable.UnifiedMap;
+import com.gs.collections.impl.set.mutable.UnifiedSet;
 import com.gs.fw.common.mithra.*;
 import com.gs.fw.common.mithra.attribute.*;
-import com.gs.fw.common.mithra.behavior.state.DatedDeletedState;
 import com.gs.fw.common.mithra.behavior.state.PersistedState;
 import com.gs.fw.common.mithra.cache.FullUniqueIndex;
 import com.gs.fw.common.mithra.finder.AbstractRelatedFinder;
@@ -30,7 +30,9 @@ import com.gs.fw.common.mithra.finder.Operation;
 import com.gs.fw.common.mithra.finder.RelatedFinder;
 import com.gs.fw.common.mithra.util.*;
 import com.gs.fw.common.mithra.cache.HashStrategy;
+import com.gs.fw.finder.Navigation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -314,7 +316,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         this.data.currentState.setReladomoObjectState(objectState, this);
     }
 
-    private void addSingleObjectToResolve() throws DeserializationException
+    protected void addSingleObjectToResolve() throws DeserializationException
     {
         AsOfAttribute businessDateAttribute = this.data.metaData.getBusinessDateAttribute();
         if (businessDateAttribute != null && this.data.partial.businessDate == null && businessDateAttribute.getDefaultDate() == null)
@@ -336,6 +338,11 @@ public class ReladomoDeserializer<T extends MithraObject>
         return new Serialized<T>(this);
     }
 
+    public SerializedList getDeserializedResultAsList() throws DeserializationException
+    {
+        return new SerializedList(this);
+    }
+
     public T getDeserializationResultAsObject()
     {
         try
@@ -346,7 +353,7 @@ public class ReladomoDeserializer<T extends MithraObject>
             }
             else
             {
-                return desrialzieSingleObjectAsInMemory();
+                return deserializeSingleObjectAsUnconfigured();
             }
         }
         catch (DeserializationException e)
@@ -355,10 +362,48 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
     }
 
-    private T desrialzieSingleObjectAsInMemory()
+    public List<T> getDeserializationResultAsList()
     {
-        //todo
-        throw new RuntimeException("not yet");
+        try
+        {
+            if (this.data.metaData.isConfigured())
+            {
+                return findAndDeserializeList();
+            }
+            else
+            {
+                return deserializeListAsUnconfigured();
+            }
+        }
+        catch (DeserializationException e)
+        {
+            throw new RuntimeException("Could not deserialize", e);
+        }
+    }
+
+    private List<T> deserializeListAsUnconfigured()
+    {
+        throw new RuntimeException("not implemented yet");
+    }
+
+    protected T deserializeSingleObjectAsUnconfigured() throws DeserializationException
+    {
+
+        for (Map.Entry<DeserializationClassMetaData, List<PartialDeserialized>> entry : objectsToResolve.entrySet())
+        {
+            List<PartialDeserialized> partialDeserializeds = entry.getValue();
+            for(int i=0;i<partialDeserializeds.size();i++)
+            {
+                handleInMemoryObject(partialDeserializeds.get(i), entry.getKey());
+            }
+        }
+        wireRelationshipsAsUnconfigured();
+        return (T) this.data.partial.deserialized;
+    }
+
+    protected void wireRelationshipsAsUnconfigured()
+    {
+        throw new RuntimeException("not implemented yet");
     }
 
     protected void checkSingleObjectDeserialized() throws DeserializationException
@@ -372,6 +417,17 @@ public class ReladomoDeserializer<T extends MithraObject>
             }
             throw new DeserializationException(message);
         }
+    }
+
+    protected List<T> findAndDeserializeList() throws DeserializationException
+    {
+        resolveAndFetchAllObjects();
+        MithraList mithraList = this.data.metaData.getRelatedFinder().constructEmptyList();
+        for(int i=0;i<this.data.list.size();i++)
+        {
+            mithraList.add(this.data.list.get(i).deserialized);
+        }
+        return mithraList;
     }
 
     protected T findAndDeserializeSingleObject() throws DeserializationException
@@ -389,13 +445,246 @@ public class ReladomoDeserializer<T extends MithraObject>
         wireRelationships();
     }
 
-    private void wireRelationships()
+    protected void wireRelationships() throws DeserializationException
     {
-        //todo
-        throw new RuntimeException("not yet");
+        for (Map.Entry<DeserializationClassMetaData, List<PartialDeserialized>> entry : objectsToResolve.entrySet())
+        {
+            wireRelationshipsForList(entry.getKey(), entry.getValue());
+        }
     }
 
-    private List<List<PartialDeserialized>> segregateByAsOfAndSourceAttribute(DeserializationClassMetaData metaData, List<PartialDeserialized> dbLookUp)
+    protected void wireRelationshipsForList(DeserializationClassMetaData metaData, List<PartialDeserialized> list) throws DeserializationException
+    {
+        if (list.size() > 1)
+        {
+            List<PartialDeserialized> detached = FastList.newList(list.size());
+            for (int i = 0; i < list.size(); i++)
+            {
+                PartialDeserialized partialDeserialized = list.get(i);
+                switch (partialDeserialized.deserializedState)
+                {
+                    case ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE:
+                    case ReladomoSerializationContext.READ_ONLY_STATE:
+                        //do nothing for these
+                        break;
+                    case ReladomoSerializationContext.IN_MEMORY_STATE:
+                        wireRelationshipsForInMemory(metaData, partialDeserialized);
+                        break;
+                    case ReladomoSerializationContext.DETACHED_STATE:
+                        if (partialDeserialized.partialRelationships != null)
+                        {
+                            detached.add(partialDeserialized);
+                        }
+                        break;
+                }
+            }
+            if (!detached.isEmpty())
+            {
+                wireRelationshipsForDetached(metaData, detached);
+            }
+        }
+    }
+
+    protected void wireRelationshipsForInMemory(DeserializationClassMetaData metaData, PartialDeserialized partialDeserialized) throws DeserializationException
+    {
+        for (String name : partialDeserialized.partialRelationships.keySet())
+        {
+            RelatedFinder relationshipFinderByName = metaData.getRelationshipFinderByName(name);
+            try
+            {
+                if (((AbstractRelatedFinder) relationshipFinderByName).isToOne())
+                {
+                    Object o = partialDeserialized.partialRelationships.get(name);
+                    setToOneRelationship(name, metaData, partialDeserialized, decodeToOne(name, partialDeserialized, o));
+                }
+                else
+                {
+                    setTooManyRelationship(name, metaData, partialDeserialized);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new DeserializationException("Could not set to-one relationship on " + partialDeserialized.dataObject.zGetPrintablePrimaryKey() + " for " + name);
+            }
+        }
+    }
+
+    protected void wireRelationshipsForDetached(DeserializationClassMetaData metaData, List<PartialDeserialized> detachedList) throws DeserializationException
+    {
+        Set<String> dependents = UnifiedSet.newSet();
+        Set<String> dependentRelationshipNames = metaData.getDependentRelationshipNames();
+        for(int i=0;i<detachedList.size();i++)
+        {
+            Set<String> names = detachedList.get(i).partialRelationships.keySet();
+            for(String name: names)
+            {
+                if (dependentRelationshipNames.contains(name))
+                {
+                    dependents.add(name);
+                }
+            }
+        }
+        for(String name: dependents)
+        {
+            filterAndWireDetachedDependentRelationship(name, metaData, detachedList);
+        }
+        wireNonDependenRelationshipsForDetached(metaData, detachedList);
+    }
+
+    protected void wireNonDependenRelationshipsForDetached(DeserializationClassMetaData metaData, List<PartialDeserialized> detachedList) throws DeserializationException
+    {
+        Set<String> dependentRelationshipNames = metaData.getDependentRelationshipNames();
+        for(int i=0;i<detachedList.size();i++)
+        {
+            PartialDeserialized partialDeserialized = detachedList.get(i);
+            for (String name : partialDeserialized.partialRelationships.keySet())
+            {
+                if (!dependentRelationshipNames.contains(name))
+                {
+                    RelatedFinder relationshipFinderByName = metaData.getRelationshipFinderByName(name);
+                    if (((AbstractRelatedFinder) relationshipFinderByName).isToOne())
+                    {
+                        Object o = partialDeserialized.partialRelationships.get(name);
+                        try
+                        {
+                            setToOneRelationship(name, metaData, partialDeserialized, decodeToOne(name, partialDeserialized, o));
+                        }
+                        catch (Exception e)
+                        {
+                            throw new DeserializationException("Could not set to-one relationship on "+partialDeserialized.dataObject.zGetPrintablePrimaryKey()+" for "+name);
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    protected void filterAndWireDetachedDependentRelationship(String name, DeserializationClassMetaData metaData, List<PartialDeserialized> detachedList) throws DeserializationException
+    {
+        List<PartialDeserialized> withRel = FastList.newList(detachedList.size());
+        for(int i=0;i<detachedList.size();i++)
+        {
+            PartialDeserialized partialDeserialized = detachedList.get(i);
+            if (partialDeserialized.partialRelationships.containsKey(name))
+            {
+                withRel.add(partialDeserialized);
+            }
+        }
+        wireDependentRelationship(name, metaData, withRel);
+    }
+
+    protected void wireDependentRelationship(String name, DeserializationClassMetaData metaData, List<PartialDeserialized> withRel) throws DeserializationException
+    {
+        MithraList forDeepFetch = metaData.getRelatedFinder().constructEmptyList();
+        for(int i=0;i<withRel.size();i++)
+        {
+            forDeepFetch.add(withRel.get(i).deserialized);
+        }
+        RelatedFinder related = metaData.getRelationshipFinderByName(name);
+        forDeepFetch.deepFetch((Navigation) related);
+        forDeepFetch.forceResolve();
+        AbstractRelatedFinder abstractRelatedFinder = (AbstractRelatedFinder) related;
+        try
+        {
+            if (abstractRelatedFinder.isToOne())
+            {
+                for(int i=0;i<withRel.size();i++)
+                {
+                    PartialDeserialized partialDeserialized = withRel.get(i);
+                    Object o = partialDeserialized.partialRelationships.get(name);
+                    setToOneRelationship(name, metaData, partialDeserialized, decodeToOne(name, partialDeserialized, o));
+                }
+            }
+            else
+            {
+                for(int i=0;i<withRel.size();i++)
+                {
+                    PartialDeserialized partialDeserialized = withRel.get(i);
+                    setTooManyRelationship(name, metaData, partialDeserialized);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            throw new DeserializationException("Could not set related object on for relationship "+name);
+        }
+    }
+
+    protected void setTooManyRelationship(String name, DeserializationClassMetaData metaData, PartialDeserialized partialDeserialized) throws IllegalAccessException, InvocationTargetException
+    {
+        RelatedFinder related = metaData.getRelationshipFinderByName(name);
+        AbstractRelatedFinder abstractRelatedFinder = (AbstractRelatedFinder) related;
+        Object o = partialDeserialized.partialRelationships.get(name);
+        MithraList relatedList = abstractRelatedFinder.constructEmptyList();
+        if (o == null)
+        {
+            //do nothing
+        }
+        else if (o instanceof ReladomoDeserializer.PartialDeserialized)
+        {
+            filterObjectForToManyRelationship(relatedList, ((PartialDeserialized)o));
+        }
+        else // a List<PartialDeserialzied)
+        {
+            for(PartialDeserialized p: (List<PartialDeserialized>) o)
+            {
+                filterObjectForToManyRelationship(relatedList, p);
+            }
+        }
+        metaData.getRelationshipSetter(name).invoke(partialDeserialized.deserialized, relatedList);
+    }
+
+    protected void filterObjectForToManyRelationship(MithraList relatedList, PartialDeserialized relatedDeserialized)
+    {
+        if (relatedDeserialized.deserializedState != ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE)
+        {
+            relatedList.add(relatedDeserialized.deserialized);
+        }
+    }
+
+    protected PartialDeserialized decodeToOne(String name, PartialDeserialized partialDeserialized, Object o) throws DeserializationException
+    {
+        if (o == null)
+        {
+            return null;
+        }
+        else if (o instanceof ReladomoDeserializer.PartialDeserialized)
+        {
+            return (PartialDeserialized) o;
+        }
+        else // a List<PartialDeserialzied)
+        {
+            List<PartialDeserialized> list = (List<PartialDeserialized>) o;
+            if (list.size() == 0)
+            {
+                return null;
+            }
+            if (list.size() == 1)
+            {
+                return list.get(0);
+            }
+            else
+            {
+                throw new DeserializationException("Cannot set a list for a to-one relationship in object "+
+                        partialDeserialized.dataObject.zGetPrintablePrimaryKey()+" and relationship "+name);
+            }
+        }
+    }
+
+    protected void setToOneRelationship(String name, DeserializationClassMetaData metaData, PartialDeserialized partialDeserialized, PartialDeserialized toSet) throws IllegalAccessException, InvocationTargetException
+    {
+        if (toSet.deserializedState == ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE)
+        {
+            metaData.getRelationshipSetter(name).invoke(partialDeserialized.deserialized, null);
+        }
+        else
+        {
+            metaData.getRelationshipSetter(name).invoke(partialDeserialized.deserialized, toSet.deserialized);
+        }
+    }
+
+    protected List<List<PartialDeserialized>> segregateByAsOfAndSourceAttribute(DeserializationClassMetaData metaData, List<PartialDeserialized> dbLookUp)
     {
         if (dbLookUp.size() == 1)
         {
@@ -481,7 +770,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
     }
 
-    private void handleUnresolvableObjects(List<PartialDeserialized> segregated, DeserializationClassMetaData metaData) throws DeserializationException
+    protected void handleUnresolvableObjects(List<PartialDeserialized> segregated, DeserializationClassMetaData metaData) throws DeserializationException
     {
         for(PartialDeserialized partDes: segregated)
         {
@@ -499,13 +788,13 @@ public class ReladomoDeserializer<T extends MithraObject>
 
     }
 
-    private void handleInMemoryObject(PartialDeserialized partDes, DeserializationClassMetaData metaData) throws DeserializationException
+    protected void handleInMemoryObject(PartialDeserialized partDes, DeserializationClassMetaData metaData) throws DeserializationException
     {
         MithraObject inMemory = constructObjectAndSetAttributes(partDes, metaData);
-        partDes.deserialized = inMemory;
+        partDes.setDeserialized(inMemory, ReladomoSerializationContext.IN_MEMORY_STATE);
     }
 
-    private void forceRefresh(DeserializationClassMetaData metaData, List<PartialDeserialized> listToRefresh, Attribute[] pkAttributes, Operation extraOp) throws DeserializationException
+    protected void forceRefresh(DeserializationClassMetaData metaData, List<PartialDeserialized> listToRefresh, Attribute[] pkAttributes, Operation extraOp) throws DeserializationException
     {
         List<MithraDataObject> unwrapped = FastList.newList(listToRefresh.size());
         for (int i = 0; i < listToRefresh.size(); i++)
@@ -547,14 +836,14 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
     }
 
-    private void handleNotFoundObject(PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
+    protected void handleNotFoundObject(PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
     {
         MithraObject inMemory;
         switch (partial.state)
         {
             case 0: // not set
                 inMemory = constructObjectAndSetAttributes(partial, metaData);
-                partial.deserialized = inMemory;
+                partial.setDeserialized(inMemory, ReladomoSerializationContext.IN_MEMORY_STATE);
                 break;
             case ReladomoSerializationContext.READ_ONLY_STATE:
             case ReladomoSerializationContext.DETACHED_STATE:
@@ -562,27 +851,35 @@ public class ReladomoDeserializer<T extends MithraObject>
             case ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE:
                 inMemory = constructObjectAndSetAttributes(partial, metaData);
                 inMemory.zSetNonTxPersistenceState(PersistedState.DELETED);
-                partial.deserialized = inMemory;
+                partial.setDeserialized(inMemory, ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE);
                 break;
             default:
                 throw new DeserializationException("should not get here!");
         }
     }
 
-    private MithraObject constructObjectAndSetAttributes(PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
+    protected MithraObject constructObjectAndSetAttributes(PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
     {
         MithraObject obj = metaData.constructObject(partial.businessDate, partial.processingDate);
         setAttributesAndMethods(obj, partial, metaData);
         return obj;
     }
 
-    private void setAttributesAndMethods(MithraObject obj, PartialDeserialized partial, DeserializationClassMetaData metaData)
+    protected void setAttributesAndMethods(MithraObject obj, PartialDeserialized partial, DeserializationClassMetaData metaData)
     {
-        //todo
-        throw new RuntimeException("not yet");
+        List<Attribute> settableAttributes = metaData.getSettableAttributes();
+        for(int i=0;i<settableAttributes.size();i++)
+        {
+            Attribute attr = settableAttributes.get(i);
+            if (partial.isAttributeSet(attr, metaData))
+            {
+                attr.setValue(obj, attr.valueOf(partial.dataObject));
+            }
+        }
+        //todo: deserializable methods
     }
 
-    private void handleFoundObject(MithraObject fromDb, PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
+    protected void handleFoundObject(MithraObject fromDb, PartialDeserialized partial, DeserializationClassMetaData metaData) throws DeserializationException
     {
         MithraTransactionalObject detachedCopy;
         switch (partial.state)
@@ -592,20 +889,20 @@ public class ReladomoDeserializer<T extends MithraObject>
                 {
                     detachedCopy = ((MithraTransactionalObject) fromDb).getDetachedCopy();
                     setAttributesAndMethods(detachedCopy, partial, metaData);
-                    partial.deserialized = detachedCopy;
+                    partial.setDeserialized(detachedCopy, ReladomoSerializationContext.DETACHED_STATE);
                 }
                 else
                 {
-                    partial.deserialized = fromDb;
+                    partial.setDeserialized(fromDb, ReladomoSerializationContext.READ_ONLY_STATE);
                 }
                 break;
             case ReladomoSerializationContext.READ_ONLY_STATE:
-                partial.deserialized = fromDb;
+                partial.setDeserialized(fromDb, ReladomoSerializationContext.READ_ONLY_STATE);
                 break;
             case ReladomoSerializationContext.DETACHED_STATE:
                 detachedCopy = ((MithraTransactionalObject) fromDb).getDetachedCopy();
                 setAttributesAndMethods(detachedCopy, partial, metaData);
-                partial.deserialized = detachedCopy;
+                partial.setDeserialized(detachedCopy, ReladomoSerializationContext.DETACHED_STATE);
                 break;
             case ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE:
                 detachedCopy = ((MithraTransactionalObject) fromDb).getDetachedCopy();
@@ -617,14 +914,14 @@ public class ReladomoDeserializer<T extends MithraObject>
                 {
                     detachedCopy.delete();
                 }
-                partial.deserialized = detachedCopy;
+                partial.setDeserialized(detachedCopy, ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE);
                 break;
             default:
                 throw new DeserializationException("should not get here!");
         }
     }
 
-    private boolean arePkAttributesSetWithNullableCheck(DeserializationClassMetaData metaData, Attribute[] pkAttributes, PartialDeserialized partial)
+    protected boolean arePkAttributesSetWithNullableCheck(DeserializationClassMetaData metaData, Attribute[] pkAttributes, PartialDeserialized partial)
     {
         for (Attribute a : pkAttributes)
         {
@@ -644,7 +941,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         return true;
     }
 
-    private boolean arePkAttributesSet(DeserializationClassMetaData metaData, Attribute[] pkAttributes, PartialDeserialized partial)
+    protected boolean arePkAttributesSet(DeserializationClassMetaData metaData, Attribute[] pkAttributes, PartialDeserialized partial)
     {
         for (Attribute a : pkAttributes)
         {
@@ -656,7 +953,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         return true;
     }
 
-    private Operation constructMultiPkOp(List<MithraDataObject> listToRefresh, Attribute[] pkAttributes)
+    protected Operation constructMultiPkOp(List<MithraDataObject> listToRefresh, Attribute[] pkAttributes)
     {
         TupleAttribute ta = pkAttributes[0].tupleWith(pkAttributes[1]);
         for(int i=2;i<pkAttributes.length;i++)
@@ -666,7 +963,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         return ta.in(listToRefresh, pkAttributes);
     }
 
-    private Operation constructSinglePkOp(List<MithraDataObject> listToRefresh, Attribute pkAttribute)
+    protected Operation constructSinglePkOp(List<MithraDataObject> listToRefresh, Attribute pkAttribute)
     {
         return pkAttribute.in(listToRefresh, pkAttribute);
     }
@@ -710,6 +1007,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         protected BitSet populatedAttributes;
         protected int state;
         protected Map<String, Object> partialRelationships; //Object is either PartialDeserialized or List<PartialDeserialized>
+        protected byte deserializedState;
         protected MithraObject deserialized; // constructed at the end of the stream
 
         protected void storeRelated(RelatedFinder relatedFinder, Object related)
@@ -734,6 +1032,12 @@ public class ReladomoDeserializer<T extends MithraObject>
         public boolean isAttributeSet(Attribute attr, DeserializationClassMetaData metaData)
         {
             return populatedAttributes != null && populatedAttributes.get(metaData.getAttriutePosition(attr));
+        }
+
+        protected void setDeserialized(MithraObject deserialized, byte state)
+        {
+            deserializedState = state;
+            this.deserialized = deserialized;
         }
     }
 
@@ -1113,7 +1417,7 @@ public class ReladomoDeserializer<T extends MithraObject>
     {
         private static final InAttributeState INSTANCE = new InAttributeState();
 
-        private void attributeDone(ReladomoDeserializer deserializer)
+        protected void attributeDone(ReladomoDeserializer deserializer)
         {
             deserializer.data.partial.markAttributeDone(deserializer.data.attribute, deserializer.data.metaData);
             deserializer.data.currentState = InObjectState.INSTANCE;
