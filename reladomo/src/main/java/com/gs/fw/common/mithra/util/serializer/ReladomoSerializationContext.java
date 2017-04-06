@@ -33,6 +33,7 @@ import java.util.List;
 public class ReladomoSerializationContext
 {
     public static final String RELADOMO_PREFIX = "_rdo";
+    public static final String RELADOMO_META_DATA = RELADOMO_PREFIX + "MetaData";
     public static final String RELADOMO_CLASS_NAME = RELADOMO_PREFIX + "ClassName";
     public static final String RELADOMO_STATE = RELADOMO_PREFIX + "State";
     public static final String RELADOMO_LIST_SIZE = RELADOMO_PREFIX + "ListSize";

@@ -28,7 +28,7 @@ import com.gs.fw.common.mithra.util.serializer.SerializedList;
 
 import java.io.IOException;
 
-public class JacksonWrappedListSerializer<T extends SerializedList<?>> extends StdSerializer<T>
+public class JacksonWrappedListSerializer<T extends SerializedList<?,?>> extends StdSerializer<T>
 {
     public JacksonWrappedListSerializer(Class<T> t)
     {

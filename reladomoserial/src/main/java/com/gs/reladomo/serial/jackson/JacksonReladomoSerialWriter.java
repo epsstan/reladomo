@@ -21,6 +21,7 @@ import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.attribute.Attribute;
 import com.gs.fw.common.mithra.finder.AbstractRelatedFinder;
 import com.gs.fw.common.mithra.util.Time;
+import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
 import com.gs.fw.common.mithra.util.serializer.SerialWriter;
 
 import java.io.IOException;
@@ -171,13 +172,13 @@ public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomo
     @Override
     public void startMetadata(MithraObject reladomoObject, JacksonReladomoSerialContext context) throws IOException
     {
-        context.getJgen().writeObjectFieldStart("_rdoMetaData");
+//        context.getJgen().writeObjectFieldStart(ReladomoSerializationContext.RELADOMO_META_DATA);
     }
 
     @Override
     public void writeMetadataEnd(MithraObject reladomoObject, JacksonReladomoSerialContext context) throws IOException
     {
-        context.getJgen().writeEndObject();
+//        context.getJgen().writeEndObject();
     }
 
     @Override

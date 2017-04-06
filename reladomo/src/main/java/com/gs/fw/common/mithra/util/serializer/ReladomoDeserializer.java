@@ -63,6 +63,11 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
     };
 
+    public Attribute getCurrentAttribute()
+    {
+        return this.data.attribute;
+    }
+
     public enum FieldOrRelation
     {
         Attribute, ToOneRelationship, ToManyRelationship, AnnotatedMethod, Unknown
@@ -765,7 +770,7 @@ public class ReladomoDeserializer<T extends MithraObject>
             }
             else
             {
-                forceRefresh(metaData, dbLookUp, pkAttributesNoSource, null);
+                forceRefresh(metaData, dbLookUp, pkAttributesNoSource, NoOperation.instance());
             }
         }
     }
@@ -823,7 +828,7 @@ public class ReladomoDeserializer<T extends MithraObject>
             PartialDeserialized partial = listToRefresh.get(i);
             if (arePkAttributesSet(metaData, pkAttributes, partial))
             {
-                MithraObject fromDb = (MithraObject) index.get(partial.dataObject);
+                MithraObject fromDb = (MithraObject) index.getFromData(partial.dataObject);
                 if (fromDb != null)
                 {
                     handleFoundObject(fromDb, partial, metaData);
@@ -1108,11 +1113,36 @@ public class ReladomoDeserializer<T extends MithraObject>
         private static final StartStateNoMeta INSTANCE = new StartStateNoMeta();
 
         @Override
+        public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = AwaitingMeta.INSTANCE;
+        }
+    }
+
+    protected static class AwaitingMeta extends State
+    {
+        private static final AwaitingMeta INSTANCE = new AwaitingMeta();
+
+        @Override
+        public void storeNested(ReladomoDeserializer deserializer, PartialDeserialized toSave) throws DeserializationException
+        {
+            deserializer.data.partial = toSave;
+            deserializer.data.currentState = EndState.INSTANCE;
+        }
+
+        @Override
+        public void storeNestedList(ReladomoDeserializer deserializer, List<PartialDeserialized> toSave) throws DeserializationException
+        {
+            deserializer.data.list = toSave;
+            deserializer.data.currentState = EndState.INSTANCE;
+        }
+
+        @Override
         public void storeReladomoClassName(ReladomoDeserializer deserializer, String className) throws DeserializationException
         {
             RelatedFinder relatedFinder = getFinderInstance(deserializer, className);
             deserializer.data.metaData = deserializer.findDeserializationMetaData(relatedFinder);
-            deserializer.data.currentState = StartStateHaveMeta.INSTANCE;
+            StartStateHaveMeta.INSTANCE.startObject(deserializer);
         }
     }
 
@@ -1671,82 +1701,82 @@ public class ReladomoDeserializer<T extends MithraObject>
 
         public void setByteField(byte value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setByteField in "+this.getClass().getName());
         }
 
         public void setShortField(short value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setShortField in "+this.getClass().getName());
         }
 
         public void setIntField(int value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setIntField in "+this.getClass().getName());
         }
 
         public void setLongField(long value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setLongField in "+this.getClass().getName());
         }
 
         public void setFloatField(float value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setFloatField in "+this.getClass().getName());
         }
 
         public void setDoubleField(double value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setDoubleField in "+this.getClass().getName());
         }
 
         public void setBooleanField(boolean value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setBooleanField in "+this.getClass().getName());
         }
 
         public void setCharField(char value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setCharField in "+this.getClass().getName());
         }
 
         public void setByteArrayField(byte[] value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setByteArrayField in "+this.getClass().getName());
         }
 
         public void setStringField(String value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setStringField in "+this.getClass().getName());
         }
 
         public void setBigDecimalField(BigDecimal value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setBigDecimalField in "+this.getClass().getName());
         }
 
         public void setDateField(Date value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setDateField in "+this.getClass().getName());
         }
 
         public void setTimestampField(Timestamp value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setTimestampField in "+this.getClass().getName());
         }
 
         public void setTimeField(Time value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call setTimeField in "+this.getClass().getName());
         }
 
         public void storeNested(ReladomoDeserializer deserializer, PartialDeserialized toSave) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call storeNested in "+this.getClass().getName());
         }
 
         public void storeNestedList(ReladomoDeserializer deserializer, List<PartialDeserialized> toSave) throws DeserializationException
         {
-            throw new DeserializationException("Should not call setReladomoObjectState in "+this.getClass().getName());
+            throw new DeserializationException("Should not call storeNestedList in "+this.getClass().getName());
         }
 
         public void storeReladomoClassName(ReladomoDeserializer deserializer, String className) throws DeserializationException

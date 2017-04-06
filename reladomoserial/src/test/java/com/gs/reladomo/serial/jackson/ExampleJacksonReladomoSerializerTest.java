@@ -16,13 +16,12 @@
 
 package com.gs.reladomo.serial.jackson;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.gs.fw.common.mithra.test.MithraTestAbstract;
 import com.gs.fw.common.mithra.test.domain.Order;
 import com.gs.fw.common.mithra.test.domain.OrderFinder;
-import com.gs.fw.common.mithra.test.domain.SerialView;
 import com.gs.fw.common.mithra.test.util.serializer.TestTrivialJson;
 import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
@@ -39,4 +38,28 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
 
         return mapper.writeValueAsString(serialized);
     }
+
+    protected Serialized fromJson(String json) throws Exception
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JacksonReladomoModule());
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        JavaType customClassCollection = mapper.getTypeFactory().constructCollectionLikeType(Serialized.class, Order.class);
+
+        return mapper.readValue(json, customClassCollection);
+//        return mapper.readValue(json, new TypeReference<Serialized<Order>>() {});
+//        return mapper.readValue(json, Serialized.class);
+    }
+
+    @Test
+    public void testOrder() throws Exception
+    {
+        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
+        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
+
+        Serialized<Order> serialized = fromJson(sb);
+        System.out.println(serialized.getWrapped().getOrderId());
+    }
+
+
 }

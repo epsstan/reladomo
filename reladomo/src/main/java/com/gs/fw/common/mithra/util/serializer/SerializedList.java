@@ -18,12 +18,13 @@ package com.gs.fw.common.mithra.util.serializer;
 
 import com.gs.fw.common.mithra.MithraList;
 import com.gs.fw.common.mithra.MithraManagerProvider;
+import com.gs.fw.common.mithra.MithraObject;
 import com.gs.fw.common.mithra.MithraTransaction;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
-public class SerializedList<T extends MithraList>
+public class SerializedList<U extends MithraObject,T extends MithraList<U>>
 {
     private T wrapped;
     private SerializationConfig config;
@@ -41,7 +42,7 @@ public class SerializedList<T extends MithraList>
         this.config = SerializationConfig.byName(configName);
     }
 
-    protected SerializedList(ReladomoDeserializer deserializer) throws DeserializationException
+    protected SerializedList(ReladomoDeserializer<U> deserializer) throws DeserializationException
     {
         this.deserializer = deserializer;
         deserializer.checkSingleObjectDeserialized();

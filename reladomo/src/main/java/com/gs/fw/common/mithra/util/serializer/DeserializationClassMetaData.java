@@ -37,7 +37,7 @@ import java.util.Set;
 
 public class DeserializationClassMetaData
 {
-    private static final Class[][] CONSTRUCTOR_ARGS = new Class[2][];
+    private static final Class[][] CONSTRUCTOR_ARGS = new Class[3][];
     private static final Object[] NO_ARGS = new Object[0];
     private final Function<? super String, ? extends Method> RELATIONSHIP_SETTER_LOOKUP = new RelationshipSetterLookup();
 
@@ -62,8 +62,8 @@ public class DeserializationClassMetaData
         CONSTRUCTOR_ARGS[1][0] = Timestamp.class;
 
         CONSTRUCTOR_ARGS[2] = new Class[2];
-        CONSTRUCTOR_ARGS[1][0] = Timestamp.class;
-        CONSTRUCTOR_ARGS[1][1] = Timestamp.class;
+        CONSTRUCTOR_ARGS[2][0] = Timestamp.class;
+        CONSTRUCTOR_ARGS[2][1] = Timestamp.class;
     }
 
     public DeserializationClassMetaData(RelatedFinder relatedFinder)
