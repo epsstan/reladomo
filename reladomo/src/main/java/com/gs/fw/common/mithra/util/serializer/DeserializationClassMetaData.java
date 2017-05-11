@@ -68,7 +68,7 @@ public class DeserializationClassMetaData
 
     public DeserializationClassMetaData(RelatedFinder relatedFinder)
     {
-        this.relatedFinder = ((AbstractRelatedFinder) relatedFinder).zWithoutParentSelector();
+        this.relatedFinder = ((AbstractRelatedFinder) relatedFinder).zWithoutParent();
         String className = getBusinessClassName();
         try
         {

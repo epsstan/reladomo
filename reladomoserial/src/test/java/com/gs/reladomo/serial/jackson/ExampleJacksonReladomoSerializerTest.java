@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.gs.fw.common.mithra.test.domain.Order;
 import com.gs.fw.common.mithra.test.domain.OrderFinder;
+import com.gs.fw.common.mithra.test.domain.OrderItemFinder;
 import com.gs.fw.common.mithra.test.util.serializer.TestTrivialJson;
 import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
@@ -58,7 +59,21 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
 
         Serialized<Order> serialized = fromJson(sb);
-        System.out.println(serialized.getWrapped().getOrderId());
+        assertEquals(1, serialized.getWrapped().getOrderId());
+        assertTrue(serialized.getWrapped().zIsDetached());
+    }
+
+    @Test
+    public void testOrderWithItems() throws Exception
+    {
+        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
+        config = config.withDeepFetches(OrderFinder.items());
+        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
+
+        Serialized<Order> serialized = fromJson(sb);
+        assertEquals(1, serialized.getWrapped().getOrderId());
+        assertTrue(serialized.getWrapped().zIsDetached());
+        assertEquals(1, serialized.getWrapped().getItems().size());
     }
 
 

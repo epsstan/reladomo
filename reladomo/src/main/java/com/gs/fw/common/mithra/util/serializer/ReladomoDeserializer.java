@@ -127,6 +127,16 @@ public class ReladomoDeserializer<T extends MithraObject>
         this.data.currentState.storeReladomoClassName(this, className);
     }
 
+    public void startObjectOrList() throws DeserializationException
+    {
+        this.data.currentState.startObjectOrList(this);
+    }
+
+    public void endObjectOrList() throws DeserializationException
+    {
+        this.data.currentState.endObjectOrList(this);
+    }
+
     public void startObject() throws DeserializationException
     {
         this.data.currentState.startObject(this);
@@ -1113,6 +1123,12 @@ public class ReladomoDeserializer<T extends MithraObject>
         private static final StartStateNoMeta INSTANCE = new StartStateNoMeta();
 
         @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.startObject(deserializer);
+        }
+
+        @Override
         public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
         {
             deserializer.data.currentState = AwaitingMeta.INSTANCE;
@@ -1223,6 +1239,12 @@ public class ReladomoDeserializer<T extends MithraObject>
         public void storeReladomoClassName(ReladomoDeserializer deserializer, String className) throws DeserializationException
         {
             checkClassNameConsistency(deserializer, className);
+        }
+
+        @Override
+        public void endObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.endObject(deserializer);
         }
 
         @Override
@@ -1340,9 +1362,15 @@ public class ReladomoDeserializer<T extends MithraObject>
         private static final InToManyRelationshipState INSTANCE = new InToManyRelationshipState();
 
         @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.startList(deserializer);
+        }
+
+        @Override
         public void startList(ReladomoDeserializer deserializer) throws DeserializationException
         {
-            deserializer.pushDataAndStartEmpty(deserializer.data.metaData);
+            deserializer.pushDataAndStartEmpty(deserializer.data.related);
             deserializer.data.currentState = InListState.INSTANCE;
         }
 
@@ -1361,18 +1389,21 @@ public class ReladomoDeserializer<T extends MithraObject>
         @Override
         public void startListElements(ReladomoDeserializer deserializer) throws DeserializationException
         {
-            if (deserializer.data.list != null)
-            {
-                throw new DeserializationException("Cannot startListElements twice on the same list!");
-            }
             deserializer.pushDataAndStartEmpty(deserializer.data.metaData);
             deserializer.data.currentState = InListElementState.INSTANCE;
+            deserializer.data.list = FastList.newList();
         }
 
         @Override
         public void storeNestedList(ReladomoDeserializer deserializer, List<PartialDeserialized> toSave) throws DeserializationException
         {
             deserializer.data.list = toSave;
+        }
+
+        @Override
+        public void endObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.endList(deserializer);
         }
 
         @Override
@@ -1387,6 +1418,12 @@ public class ReladomoDeserializer<T extends MithraObject>
     protected static class InListElementState extends State
     {
         private static final InListElementState INSTANCE = new InListElementState();
+
+        @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.startObject(deserializer);
+        }
 
         @Override
         public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
@@ -1413,6 +1450,12 @@ public class ReladomoDeserializer<T extends MithraObject>
     protected static class InToOneRelationshipState extends State
     {
         private static final InToOneRelationshipState INSTANCE = new InToOneRelationshipState();
+
+        @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.startObject(deserializer);
+        }
 
         @Override
         public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
@@ -1632,6 +1675,16 @@ public class ReladomoDeserializer<T extends MithraObject>
             deserializer.data.partial = new PartialDeserialized();
             deserializer.data.partial.dataObject = deserializer.data.metaData.constructData();
             deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            throw new DeserializationException("Should not call startObjectOrList in "+this.getClass().getName());
+        }
+
+        public void endObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            throw new DeserializationException("Should not call endObjectOrList in "+this.getClass().getName());
         }
 
         public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
