@@ -76,5 +76,54 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         assertEquals(1, serialized.getWrapped().getItems().size());
     }
 
+    @Override
+    public void testOrderWithDependents() throws Exception
+    {
+        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
+        config = config.withDeepDependents();
+        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
+
+        Serialized<Order> serialized = fromJson(sb);
+        assertEquals(1, serialized.getWrapped().getOrderId());
+        assertTrue(serialized.getWrapped().zIsDetached());
+        assertEquals(1, serialized.getWrapped().getItems().size());
+    }
+
+    @Test
+    public void testOrderWithRemovedItem() throws Exception
+    {
+        String json = "{\n" +
+                "  \"_rdoClassName\" : \"com.gs.fw.common.mithra.test.domain.Order\",\n" +
+                "  \"_rdoState\" : 20,\n" +
+                "  \"orderId\" : 1,\n" +
+                "  \"orderDate\" : 1073883600000,\n" +
+                "  \"userId\" : 1,\n" +
+                "  \"description\" : \"First order modified\",\n" +
+                "  \"trackingId\" : \"123\",\n" +
+                "  \"items\" : {\n" +
+                "    \"_rdoMetaData\" : {\n" +
+                "      \"_rdoClassName\" : \"com.gs.fw.common.mithra.test.domain.OrderItem\",\n" +
+                "      \"_rdoListSize\" : 0\n" +
+                "    },\n" +
+                "    \"elements\" : []\n" +
+                "  }\n" +
+                "}";
+
+        Serialized<Order> serialized = fromJson(json);
+        Order unwrappedOrder = serialized.getWrapped();
+        assertEquals(1, unwrappedOrder.getOrderId());
+        assertEquals("First order modified", unwrappedOrder.getDescription()); //modified attribute
+        assertEquals("In-Progress", unwrappedOrder.getState()); // missing in json, should stay as it was
+        assertTrue(unwrappedOrder.zIsDetached());
+        assertEquals(0, unwrappedOrder.getItems().size());
+
+        unwrappedOrder.copyDetachedValuesToOriginalOrInsertIfNew();
+        Order order = OrderFinder.findOneBypassCache(OrderFinder.orderId().eq(1));
+        assertEquals(1, order.getOrderId());
+        assertEquals("First order modified", order.getDescription()); //modified attribute
+        assertEquals("In-Progress", order.getState()); // missing in json, should stay as it was
+        assertEquals(0, order.getItems().size());
+    }
+
 
 }

@@ -70,14 +70,7 @@ public class DeserializationClassMetaData
     {
         this.relatedFinder = ((AbstractRelatedFinder) relatedFinder).zWithoutParent();
         String className = getBusinessClassName();
-        try
-        {
-            businessClass = Class.forName(className);
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new RuntimeException("Could not get class "+className, e);
-        }
+        this.businessClass = findBusinessClass(className);
         String dataClassName = className+"Data";
         try
         {
@@ -149,6 +142,23 @@ public class DeserializationClassMetaData
         }
     }
 
+    private Class findBusinessClass(String className)
+    {
+        try
+        {
+            Class<?> aClass = Class.forName(className);
+            if (aClass.isInterface())
+            {
+                aClass = Class.forName(className+"Impl");
+            }
+            return aClass;
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new RuntimeException("Could not get class "+className, e);
+        }
+    }
+
     public Set<String> getDependentRelationshipNames()
     {
         return dependentRelationshipNames;
@@ -174,7 +184,7 @@ public class DeserializationClassMetaData
         }
         catch (NoSuchMethodException e)
         {
-            throw new RuntimeException("Could not find constructor for "+businessClass.getClass().getName());
+            throw new RuntimeException("Could not find constructor for "+businessClass.getName());
         }
     }
 
@@ -300,7 +310,7 @@ public class DeserializationClassMetaData
         }
         catch (Exception e)
         {
-            throw new DeserializationException("Could not construct "+businessClass.getClass().getName(), e);
+            throw new DeserializationException("Could not construct "+businessClass.getName(), e);
         }
         return null; // never gets here.
     }

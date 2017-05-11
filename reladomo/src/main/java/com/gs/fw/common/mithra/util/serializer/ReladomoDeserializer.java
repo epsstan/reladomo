@@ -51,6 +51,7 @@ public class ReladomoDeserializer<T extends MithraObject>
 {
     protected static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private static final Object[] NULL_ARGS = (Object[]) null;
+    private static final Object[] SINGLE_NULL = new Object[1];
     private final SimpleDateFormat timestampFormat = new SimpleDateFormat(DATE_FORMAT);
 
     //todo: key here should be both class and finder to support inheritance
@@ -470,7 +471,7 @@ public class ReladomoDeserializer<T extends MithraObject>
 
     protected void wireRelationshipsForList(DeserializationClassMetaData metaData, List<PartialDeserialized> list) throws DeserializationException
     {
-        if (list.size() > 1)
+        if (list.size() > 0)
         {
             List<PartialDeserialized> detached = FastList.newList(list.size());
             for (int i = 0; i < list.size(); i++)
@@ -622,7 +623,7 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
         catch (Exception e)
         {
-            throw new DeserializationException("Could not set related object on for relationship "+name);
+            throw new DeserializationException("Could not set related object on for relationship "+name, e);
         }
     }
 
@@ -689,9 +690,9 @@ public class ReladomoDeserializer<T extends MithraObject>
 
     protected void setToOneRelationship(String name, DeserializationClassMetaData metaData, PartialDeserialized partialDeserialized, PartialDeserialized toSet) throws IllegalAccessException, InvocationTargetException
     {
-        if (toSet.deserializedState == ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE)
+        if (toSet == null || toSet.deserializedState == ReladomoSerializationContext.DELETED_OR_TERMINATED_STATE)
         {
-            metaData.getRelationshipSetter(name).invoke(partialDeserialized.deserialized, null);
+            metaData.getRelationshipSetter(name).invoke(partialDeserialized.deserialized, SINGLE_NULL);
         }
         else
         {
@@ -1173,6 +1174,10 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
         catch (ClassNotFoundException e)
         {
+            if (className.endsWith("Impl"))
+            {
+                return getFinderInstance(deserializer, className.substring(0, className.length() - "Impl".length()));
+            }
             throw new DeserializationException("Could not find class "+finderClassName, e);
         }
     }

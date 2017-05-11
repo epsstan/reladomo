@@ -472,6 +472,7 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
         @Override
         ParserState endArray(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
         {
+            deserializer.endListElements();
             return previous;
         }
     }
