@@ -79,6 +79,7 @@ public class ReladomoDeserializer<T extends MithraObject>
     private StackableData data;
     private Stack<StackableData> dataStack = new Stack<StackableData>();
     private Map<DeserializationClassMetaData, List<PartialDeserialized>> objectsToResolve = UnifiedMap.newMap();
+    private State unknownState = InUnknownField.INSTANCE;
 
     public ReladomoDeserializer(RelatedFinder<T> rootFinder)
     {
@@ -91,6 +92,11 @@ public class ReladomoDeserializer<T extends MithraObject>
     {
         this.data = new StackableData();
         this.data.currentState = StartStateNoMeta.INSTANCE;
+    }
+
+    public void setIgnoreUnknown()
+    {
+        this.unknownState = IgnoreUnknownField.INSTANCE;
     }
 
     protected DeserializationClassMetaData findDeserializationMetaData(RelatedFinder<T> finder)
@@ -1354,6 +1360,318 @@ public class ReladomoDeserializer<T extends MithraObject>
     protected static class InUnknownField extends State
     {
         private static final InUnknownField INSTANCE = new InUnknownField();
+
+        @Override
+        public void skipCurrentFieldOrRelationship(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+    }
+
+    protected static class IgnoreEverything extends State
+    {
+        private int objectOrListCount = 0;
+        private int listElementCount = 0;
+
+        public IgnoreEverything(int objectOrListCount, int listElementCount)
+        {
+            this.objectOrListCount = objectOrListCount;
+            this.listElementCount = listElementCount;
+        }
+
+        @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.objectOrListCount++;
+        }
+
+        @Override
+        public void endObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.objectOrListCount--;
+            possiblySetState(deserializer);
+        }
+
+        private void possiblySetState(ReladomoDeserializer deserializer)
+        {
+            if (objectOrListCount == 0 && listElementCount == 0)
+            {
+                deserializer.data.currentState = InObjectState.INSTANCE;
+            }
+        }
+
+        @Override
+        public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            objectOrListCount++;
+        }
+
+        @Override
+        public void endObject(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.objectOrListCount--;
+            possiblySetState(deserializer);
+        }
+
+        @Override
+        public void startList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            objectOrListCount++;
+        }
+
+        @Override
+        public void endList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.objectOrListCount--;
+            possiblySetState(deserializer);
+        }
+
+        @Override
+        public void startListElements(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            listElementCount++;
+        }
+
+        @Override
+        public void endListElements(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            this.listElementCount--;
+            possiblySetState(deserializer);
+        }
+
+        @Override
+        public FieldOrRelation startFieldOrRelationship(String name, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            return FieldOrRelation.Unknown;
+        }
+
+        @Override
+        public Attribute startAttribute(String name, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            return null;
+        }
+
+        @Override
+        public FieldOrRelation startRelationship(String name, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            return FieldOrRelation.Unknown;
+        }
+
+        @Override
+        public void parseFieldFromString(String value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setFieldOrRelationshipNull(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void skipCurrentFieldOrRelationship(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setByteField(byte value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setShortField(short value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setIntField(int value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setLongField(long value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setFloatField(float value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setDoubleField(double value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setBooleanField(boolean value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setCharField(char value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setByteArrayField(byte[] value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setStringField(String value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setBigDecimalField(BigDecimal value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setDateField(Date value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setTimestampField(Timestamp value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+
+        @Override
+        public void setTimeField(Time value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+        }
+    }
+
+    protected static class IgnoreUnknownField extends State
+    {
+        private static final IgnoreUnknownField INSTANCE = new IgnoreUnknownField();
+
+        @Override
+        public void startObjectOrList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = new IgnoreEverything(1, 0);
+        }
+
+        @Override
+        public void startObject(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = new IgnoreEverything(1, 0);
+        }
+
+        @Override
+        public void startList(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = new IgnoreEverything(1, 0);
+        }
+
+        @Override
+        public void startListElements(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = new IgnoreEverything(0, 1);
+        }
+
+        @Override
+        public void parseFieldFromString(String value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setFieldOrRelationshipNull(ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setReladomoObjectState(int objectState, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setByteField(byte value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setShortField(short value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setIntField(int value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setLongField(long value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setFloatField(float value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setDoubleField(double value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setBooleanField(boolean value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setCharField(char value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setByteArrayField(byte[] value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setStringField(String value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setBigDecimalField(BigDecimal value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setDateField(Date value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setTimestampField(Timestamp value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
+
+        @Override
+        public void setTimeField(Time value, ReladomoDeserializer deserializer) throws DeserializationException
+        {
+            deserializer.data.currentState = InObjectState.INSTANCE;
+        }
 
         @Override
         public void skipCurrentFieldOrRelationship(ReladomoDeserializer deserializer) throws DeserializationException
