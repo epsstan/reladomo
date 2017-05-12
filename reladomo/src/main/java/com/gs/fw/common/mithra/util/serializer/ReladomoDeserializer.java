@@ -2042,7 +2042,7 @@ public class ReladomoDeserializer<T extends MithraObject>
 
         public FieldOrRelation startFieldOrRelationship(String name, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call startFieldOrRelationship in "+this.getClass().getName());
+            throw new DeserializationException("Should not call startFieldOrRelationship '"+name+"' in "+this.getClass().getName());
         }
 
         public Attribute startAttribute(String name, ReladomoDeserializer deserializer) throws DeserializationException

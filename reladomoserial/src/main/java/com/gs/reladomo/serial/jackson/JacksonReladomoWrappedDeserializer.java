@@ -59,6 +59,10 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
         }
         JavaType valueType = wrapperType.containedType(0);
         JacksonReladomoWrappedDeserializer deserializer = new JacksonReladomoWrappedDeserializer();
+        if (valueType == null)
+        {
+            valueType = wrapperType;
+        }
         deserializer.valueType = valueType;
         return deserializer;
     }

@@ -27,6 +27,7 @@ import com.gs.fw.common.mithra.test.domain.SerialView;
 import com.gs.fw.common.mithra.test.util.serializer.TestTrivialJson;
 import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
@@ -53,6 +54,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
 //        return mapper.readValue(json, Serialized.class);
     }
 
+    @Override
     @Test
     public void testOrder() throws Exception
     {
@@ -64,6 +66,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         assertTrue(serialized.getWrapped().zIsDetached());
     }
 
+    @Override
     @Test
     public void testOrderWithItems() throws Exception
     {
@@ -78,6 +81,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
     }
 
     @Override
+    @Test
     public void testOrderWithDependents() throws Exception
     {
         SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
@@ -127,6 +131,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
     }
 
     @Override
+    @Test
     public void testOrderWithDependentsAndLongMethods() throws Exception
     {
         SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
@@ -139,5 +144,20 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         assertEquals(2, serialized.getWrapped().getOrderId());
         assertTrue(serialized.getWrapped().zIsDetached());
         assertEquals(3, serialized.getWrapped().getItems().size());
+    }
+
+    @Override
+    @Test
+    public void testOrderWithDependentsNoMeta() throws Exception
+    {
+        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
+        config = config.withDeepDependents();
+        config = config.withoutMetaData();
+        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
+
+        Serialized<Order> serialized = fromJson(sb);
+        assertEquals(1, serialized.getWrapped().getOrderId());
+        assertTrue(serialized.getWrapped().zIsDetached());
+        assertEquals(1, serialized.getWrapped().getItems().size());
     }
 }

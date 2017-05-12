@@ -244,13 +244,13 @@ public class JacksonReladomoSerialWriter implements SerialWriter<JacksonReladomo
     @Override
     public void startReladomoListMetatdata(MithraList reladomoList, JacksonReladomoSerialContext context) throws IOException
     {
-        context.getJgen().writeObjectFieldStart("_rdoMetaData");
+//        context.getJgen().writeObjectFieldStart("_rdoMetaData");
     }
 
     @Override
     public void endReladomoListMedatadata(MithraList reladomoList, JacksonReladomoSerialContext context) throws IOException
     {
-        context.getJgen().writeEndObject();
+//        context.getJgen().writeEndObject();
     }
 
     @Override
