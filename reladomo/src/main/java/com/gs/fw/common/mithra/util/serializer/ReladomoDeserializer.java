@@ -1314,7 +1314,7 @@ public class ReladomoDeserializer<T extends MithraObject>
                 deserializer.data.currentState = InAnnotatedMethod.INSTANCE;
                 return FieldOrRelation.AnnotatedMethod;
             }
-            deserializer.data.currentState = InUnknownField.INSTANCE;
+            deserializer.data.currentState = deserializer.unknownState;
             return FieldOrRelation.Unknown;
         }
 
@@ -1329,7 +1329,7 @@ public class ReladomoDeserializer<T extends MithraObject>
             }
             else
             {
-                deserializer.data.currentState = InUnknownField.INSTANCE;
+                deserializer.data.currentState = deserializer.unknownState;
             }
             return attribute;
         }
@@ -1352,7 +1352,7 @@ public class ReladomoDeserializer<T extends MithraObject>
                     return FieldOrRelation.ToManyRelationship;
                 }
             }
-            deserializer.data.currentState = InUnknownField.INSTANCE;
+            deserializer.data.currentState = deserializer.unknownState;
             return FieldOrRelation.Unknown;
         }
     }

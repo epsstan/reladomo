@@ -78,6 +78,8 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
             deserializer = createDeserializer(rawClass);
         }
 
+        deserializer.setIgnoreUnknown();
+
         ParserState state = NormalParserState.INSTANCE;
         do
         {
@@ -234,8 +236,7 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
                 ReladomoDeserializer.FieldOrRelation fieldOrRelation = deserializer.startFieldOrRelationship(fieldName);
                 if (ReladomoDeserializer.FieldOrRelation.Unknown.equals(fieldOrRelation))
                 {
-                    deserializer.skipCurrentFieldOrRelationship();
-                    return new IgnoreValueState(this);
+                    return this;
                 }
                 else if (ReladomoDeserializer.FieldOrRelation.ToManyRelationship.equals(fieldOrRelation))
                 {
@@ -327,83 +328,6 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
         }
     }
 
-    private static class IgnoreArrayState extends IgnoreState
-    {
-        public IgnoreArrayState(ParserState previous)
-        {
-            super(previous);
-        }
-
-        @Override
-        ParserState endArray(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-    }
-
-    private static class IgnoreValueState extends ParserState
-    {
-        protected ParserState previous;
-
-        public IgnoreValueState(ParserState previous)
-        {
-            this.previous = previous;
-        }
-
-        @Override
-        ParserState startObject(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return new IgnoreState(previous);
-        }
-
-        @Override
-        ParserState startArray(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return new IgnoreArrayState(previous);
-        }
-
-        @Override
-        ParserState valueEmbeddedObject(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueTrue(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueFalse(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueNull(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueString(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueNumberInt(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-
-        @Override
-        ParserState valueNumberFloat(JacksonReladomoWrappedDeserializer jacksonDeserializer, JsonParser parser, DeserializationContext ctxt, JsonToken jsonToken, ReladomoDeserializer deserializer) throws IOException
-        {
-            return previous;
-        }
-    }
 
     private static class IgnoreState extends ParserState
     {
