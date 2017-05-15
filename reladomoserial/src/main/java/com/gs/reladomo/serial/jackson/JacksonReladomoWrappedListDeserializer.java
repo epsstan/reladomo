@@ -24,17 +24,18 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.gs.fw.common.mithra.util.MithraRuntimeCacheController;
 import com.gs.fw.common.mithra.util.serializer.ReladomoDeserializer;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
+import com.gs.fw.common.mithra.util.serializer.SerializedList;
 import com.gs.reladomo.serial.json.IntDateParser;
 import com.gs.reladomo.serial.json.JsonDeserializerState;
 
 import java.io.IOException;
 import java.util.Date;
 
-public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serialized<?>> implements ContextualDeserializer
+public class JacksonReladomoWrappedListDeserializer extends StdDeserializer<SerializedList<?, ?>> implements ContextualDeserializer
 {
     private JavaType valueType;
 
-    public JacksonReladomoWrappedDeserializer()
+    public JacksonReladomoWrappedListDeserializer()
     {
         super(Serialized.class);
     }
@@ -55,8 +56,8 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
         {
             return this;
         }
-        JavaType valueType = wrapperType.containedType(0);
-        JacksonReladomoWrappedDeserializer deserializer = new JacksonReladomoWrappedDeserializer();
+        JavaType valueType = wrapperType.getContentType();
+        JacksonReladomoWrappedListDeserializer deserializer = new JacksonReladomoWrappedListDeserializer();
         if (valueType == null)
         {
             valueType = wrapperType;
@@ -66,7 +67,7 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
     }
 
     @Override
-    public Serialized<?> deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException
+    public SerializedList<?, ?> deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException
     {
         ReladomoDeserializer deserializer;
         if (this.valueType == null)
@@ -84,7 +85,7 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
 
         DateParser dateParser = new DateParser(ctxt);
 
-        JsonDeserializerState state = JsonDeserializerState.NormalParserState.INSTANCE;
+        JsonDeserializerState state = JsonDeserializerState.ListStartState.INSTANCE;
         do
         {
             JsonToken jsonToken = parser.getCurrentToken();
@@ -140,7 +141,7 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
             }
             parser.nextToken();
         } while (!parser.isClosed());
-        return deserializer.getDeserializedResult();
+        return deserializer.getDeserializedResultAsList();
     }
 
     private ReladomoDeserializer createDeserializer(Class<?> rawClass) throws IOException

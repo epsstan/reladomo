@@ -45,7 +45,7 @@ public class SerializedList<U extends MithraObject,T extends MithraList<U>>
     protected SerializedList(ReladomoDeserializer<U> deserializer) throws DeserializationException
     {
         this.deserializer = deserializer;
-        deserializer.checkSingleObjectDeserialized();
+        deserializer.checkListObjectDeserialized();
     }
 
     public T getWrapped()

@@ -441,6 +441,19 @@ public class ReladomoDeserializer<T extends MithraObject>
         }
     }
 
+    protected void checkListObjectDeserialized() throws DeserializationException
+    {
+        if (this.data.list == null)
+        {
+            String message = "No list was deserialized!";
+            if (this.data.partial != null)
+            {
+                message = "Looks like we deserialized a single object not a list!";
+            }
+            throw new DeserializationException(message);
+        }
+    }
+
     protected List<T> findAndDeserializeList() throws DeserializationException
     {
         resolveAndFetchAllObjects();
@@ -1708,6 +1721,12 @@ public class ReladomoDeserializer<T extends MithraObject>
     protected static class InListState extends State
     {
         private static final InListState INSTANCE = new InListState();
+
+        @Override
+        public void storeReladomoClassName(ReladomoDeserializer deserializer, String className) throws DeserializationException
+        {
+            checkClassNameConsistency(deserializer, className);
+        }
 
         @Override
         public void startListElements(ReladomoDeserializer deserializer) throws DeserializationException

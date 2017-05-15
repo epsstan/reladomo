@@ -29,5 +29,6 @@ public class JacksonReladomoModule extends SimpleModule
         addSerializer(Serialized.class, new JacksonWrappedSerializer(Serialized.class));
         addSerializer(SerializedList.class, new JacksonWrappedListSerializer(SerializedList.class));
         addDeserializer(Serialized.class, new JacksonReladomoWrappedDeserializer());
+        addDeserializer(SerializedList.class, new JacksonReladomoWrappedListDeserializer());
     }
 }
