@@ -14,9 +14,6 @@ import com.gs.fw.common.mithra.util.serializer.Serialized;
 import com.gs.fw.common.mithra.util.serializer.SerializedList;
 import org.junit.Test;
 
-/**
- * Created by me on 5/12/2017.
- */
 public class ExampleJacksonReladomoSerializerListTest extends TestTrivialJsonList
 {
 

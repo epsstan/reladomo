@@ -32,6 +32,7 @@ import com.gs.fw.common.mithra.util.*;
 import com.gs.fw.common.mithra.cache.HashStrategy;
 import com.gs.fw.finder.Navigation;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -80,6 +81,20 @@ public class ReladomoDeserializer<T extends MithraObject>
     private Stack<StackableData> dataStack = new Stack<StackableData>();
     private Map<DeserializationClassMetaData, List<PartialDeserialized>> objectsToResolve = UnifiedMap.newMap();
     private State unknownState = InUnknownField.INSTANCE;
+
+    public ReladomoDeserializer(Class aClass)
+    {
+        try
+        {
+            this.data = new StackableData();
+            this.data.metaData = findDeserializationMetaData(new MithraRuntimeCacheController(Class.forName(aClass.getName() + "Finder")).getFinderInstance());
+            this.data.currentState = StartStateHaveMeta.INSTANCE;
+        }
+        catch (ClassNotFoundException e)
+        {
+            throw new RuntimeException("Could not finder for class "+aClass.getName());
+        }
+    }
 
     public ReladomoDeserializer(RelatedFinder<T> rootFinder)
     {
@@ -2076,7 +2091,7 @@ public class ReladomoDeserializer<T extends MithraObject>
 
         public void parseFieldFromString(String value, ReladomoDeserializer deserializer) throws DeserializationException
         {
-            throw new DeserializationException("Should not call parseFieldFromString in "+this.getClass().getName());
+            throw new DeserializationException("Should not call parseFieldFromString in "+this.getClass().getName() +" value '"+value+"'");
         }
 
         public void setFieldOrRelationshipNull(ReladomoDeserializer deserializer) throws DeserializationException

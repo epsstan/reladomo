@@ -197,13 +197,13 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void startMetadata(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-        context.pushNewObject("_rdoMetaData");
+//        context.pushNewObject("_rdoMetaData");
     }
 
     @Override
     public void writeMetadataEnd(MithraObject reladomoObject, GsonRelodomoSerialContext context)
     {
-        context.pop();
+//        context.pop();
     }
 
     @Override
@@ -269,13 +269,13 @@ public class GsonReladomoSerialWriter implements SerialWriter<GsonRelodomoSerial
     @Override
     public void startReladomoListMetatdata(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-        context.pushNewObject("_rdoMetaData");
+//        context.pushNewObject("_rdoMetaData");
     }
 
     @Override
     public void endReladomoListMedatadata(MithraList reladomoList, GsonRelodomoSerialContext context)
     {
-        context.pop();
+//        context.pop();
     }
 
     @Override

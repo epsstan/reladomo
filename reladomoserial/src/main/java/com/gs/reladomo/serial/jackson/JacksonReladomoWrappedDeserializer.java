@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.gs.fw.common.mithra.util.MithraRuntimeCacheController;
 import com.gs.fw.common.mithra.util.serializer.ReladomoDeserializer;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
 import com.gs.reladomo.serial.json.IntDateParser;
@@ -72,12 +71,11 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
         if (this.valueType == null)
         {
             deserializer = new ReladomoDeserializer();
-
         }
         else
         {
             Class<?> rawClass = this.valueType.getRawClass();
-            deserializer = createDeserializer(rawClass);
+            deserializer = new ReladomoDeserializer(rawClass);
         }
 
         deserializer.setIgnoreUnknown();
@@ -141,18 +139,6 @@ public class JacksonReladomoWrappedDeserializer extends StdDeserializer<Serializ
             parser.nextToken();
         } while (!parser.isClosed());
         return deserializer.getDeserializedResult();
-    }
-
-    private ReladomoDeserializer createDeserializer(Class<?> rawClass) throws IOException
-    {
-        try
-        {
-            return new ReladomoDeserializer(new MithraRuntimeCacheController(Class.forName(rawClass.getName() + "Finder")).getFinderInstance());
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new IOException("Could not finder for class "+rawClass.getName());
-        }
     }
 
     private class DateParser implements IntDateParser

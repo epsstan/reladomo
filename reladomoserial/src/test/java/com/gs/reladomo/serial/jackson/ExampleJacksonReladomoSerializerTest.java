@@ -16,24 +16,19 @@
 
 package com.gs.reladomo.serial.jackson;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.gs.fw.common.mithra.test.domain.Order;
 import com.gs.fw.common.mithra.test.domain.OrderFinder;
-import com.gs.fw.common.mithra.test.domain.OrderItemFinder;
-import com.gs.fw.common.mithra.test.domain.SerialView;
-import com.gs.fw.common.mithra.test.util.serializer.TestTrivialJson;
-import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
+import com.gs.fw.common.mithra.test.util.serializer.TestRoundTripStringBased;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
-import org.junit.Ignore;
 import org.junit.Test;
 
-public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
+public class ExampleJacksonReladomoSerializerTest extends TestRoundTripStringBased
 {
     @Override
-    protected String toJson(Serialized serialized) throws Exception
+    protected String toSerializedString(Serialized serialized) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JacksonReladomoModule());
@@ -42,7 +37,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         return mapper.writeValueAsString(serialized);
     }
 
-    protected Serialized fromJson(String json) throws Exception
+    protected Serialized fromSerializedString(String json) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JacksonReladomoModule());
@@ -52,46 +47,6 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         return mapper.readValue(json, customClassCollection);
 //        return mapper.readValue(json, new TypeReference<Serialized<Order>>() {});
 //        return mapper.readValue(json, Serialized.class);
-    }
-
-    @Override
-    @Test
-    public void testOrder() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
-
-        Serialized<Order> serialized = fromJson(sb);
-        assertEquals(1, serialized.getWrapped().getOrderId());
-        assertTrue(serialized.getWrapped().zIsDetached());
-    }
-
-    @Override
-    @Test
-    public void testOrderWithItems() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepFetches(OrderFinder.items());
-        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
-
-        Serialized<Order> serialized = fromJson(sb);
-        assertEquals(1, serialized.getWrapped().getOrderId());
-        assertTrue(serialized.getWrapped().zIsDetached());
-        assertEquals(1, serialized.getWrapped().getItems().size());
-    }
-
-    @Override
-    @Test
-    public void testOrderWithDependents() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
-
-        Serialized<Order> serialized = fromJson(sb);
-        assertEquals(1, serialized.getWrapped().getOrderId());
-        assertTrue(serialized.getWrapped().zIsDetached());
-        assertEquals(1, serialized.getWrapped().getItems().size());
     }
 
     @Test
@@ -114,7 +69,7 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
                 "  }\n" +
                 "}";
 
-        Serialized<Order> serialized = fromJson(json);
+        Serialized<Order> serialized = fromSerializedString(json);
         Order unwrappedOrder = serialized.getWrapped();
         assertEquals(1, unwrappedOrder.getOrderId());
         assertEquals("First order modified", unwrappedOrder.getDescription()); //modified attribute
@@ -130,34 +85,4 @@ public class ExampleJacksonReladomoSerializerTest extends TestTrivialJson
         assertEquals(0, order.getItems().size());
     }
 
-    @Override
-    @Test
-    public void testOrderWithDependentsAndLongMethods() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        config = config.withAnnotatedMethods(SerialView.Longer.class);
-
-        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(2))), config));
-
-        Serialized<Order> serialized = fromJson(sb);
-        assertEquals(2, serialized.getWrapped().getOrderId());
-        assertTrue(serialized.getWrapped().zIsDetached());
-        assertEquals(3, serialized.getWrapped().getItems().size());
-    }
-
-    @Override
-    @Test
-    public void testOrderWithDependentsNoMeta() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        config = config.withoutMetaData();
-        String sb = toJson(new Serialized((OrderFinder.findOne(OrderFinder.orderId().eq(1))), config));
-
-        Serialized<Order> serialized = fromJson(sb);
-        assertEquals(1, serialized.getWrapped().getOrderId());
-        assertTrue(serialized.getWrapped().zIsDetached());
-        assertEquals(1, serialized.getWrapped().getItems().size());
-    }
 }

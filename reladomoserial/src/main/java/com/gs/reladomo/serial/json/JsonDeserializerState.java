@@ -66,6 +66,12 @@ public abstract class JsonDeserializerState
     {
         throw new RuntimeException("Shouldn't call valueString in "+this.getClass().getSimpleName());
     }
+
+    public JsonDeserializerState valueTimestamp(Timestamp value, ReladomoDeserializer deserializer) throws IOException
+    {
+        throw new RuntimeException("Shouldn't call valueString in "+this.getClass().getSimpleName());
+    }
+
     public JsonDeserializerState valueNumberInt(String value, ReladomoDeserializer deserializer, IntDateParser intDateParser) throws IOException
     {
         throw new RuntimeException("Shouldn't call valueNumberInt in "+this.getClass().getSimpleName());
@@ -151,6 +157,13 @@ public abstract class JsonDeserializerState
         public JsonDeserializerState valueString(String value, ReladomoDeserializer deserializer) throws IOException
         {
             deserializer.parseFieldFromString(value);
+            return this;
+        }
+
+        @Override
+        public JsonDeserializerState valueTimestamp(Timestamp value, ReladomoDeserializer deserializer) throws IOException
+        {
+            deserializer.setTimestampField(value);
             return this;
         }
 
@@ -241,6 +254,12 @@ public abstract class JsonDeserializerState
         public static ObjectStateState INSTANCE = new ObjectStateState();
 
         @Override
+        public JsonDeserializerState valueString(String value, ReladomoDeserializer deserializer) throws IOException
+        {
+            return valueNumberInt(value, deserializer, null);
+        }
+
+        @Override
         public JsonDeserializerState valueNumberInt(String value, ReladomoDeserializer deserializer, IntDateParser intDateParser) throws IOException
         {
             deserializer.setReladomoObjectState(Integer.parseInt(value));
@@ -308,6 +327,12 @@ public abstract class JsonDeserializerState
 
         @Override
         public JsonDeserializerState valueNull(ReladomoDeserializer deserializer) throws IOException
+        {
+            return this;
+        }
+
+        @Override
+        public JsonDeserializerState valueTimestamp(Timestamp value, ReladomoDeserializer deserializer) throws IOException
         {
             return this;
         }
