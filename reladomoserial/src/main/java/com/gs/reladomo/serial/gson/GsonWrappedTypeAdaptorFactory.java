@@ -21,6 +21,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.gs.fw.common.mithra.util.serializer.Serialized;
+import com.gs.fw.common.mithra.util.serializer.SerializedList;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -39,6 +40,16 @@ public class GsonWrappedTypeAdaptorFactory implements TypeAdapterFactory
                 return new GsonWrappedTypedAdapter((Class) typeArguments[0]);
             }
             return new GsonWrappedTypedAdapter(null);
+        }
+        if (SerializedList.class.equals(typeToken.getRawType()))
+        {
+            Type type = typeToken.getType();
+            if (type instanceof ParameterizedType)
+            {
+                Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
+                return new GsonWrappedListTypedAdapter((Class) typeArguments[0]);
+            }
+            return new GsonWrappedListTypedAdapter(null);
         }
         return null;
     }

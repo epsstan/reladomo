@@ -6,18 +6,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.gs.fw.common.mithra.test.domain.Order;
 import com.gs.fw.common.mithra.test.domain.OrderFinder;
 import com.gs.fw.common.mithra.test.domain.OrderList;
-import com.gs.fw.common.mithra.test.domain.SerialView;
-import com.gs.fw.common.mithra.test.util.serializer.TestTrivialJsonList;
+import com.gs.fw.common.mithra.test.util.serializer.TestRoundTripListStringBased;
 import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
-import com.gs.fw.common.mithra.util.serializer.SerializationConfig;
-import com.gs.fw.common.mithra.util.serializer.Serialized;
 import com.gs.fw.common.mithra.util.serializer.SerializedList;
 import org.junit.Test;
 
-public class ExampleJacksonReladomoSerializerListTest extends TestTrivialJsonList
+public class ExampleJacksonReladomoSerializerListTest extends TestRoundTripListStringBased
 {
 
-    protected SerializedList fromJson(String json) throws Exception
+    protected SerializedList toSerializedString(String json) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JacksonReladomoModule());
@@ -30,50 +27,13 @@ public class ExampleJacksonReladomoSerializerListTest extends TestTrivialJsonLis
     }
 
     @Override
-    protected String toJson(SerializedList serialized) throws Exception
+    protected String fromSerializedString(SerializedList serialized) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JacksonReladomoModule());
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         return mapper.writeValueAsString(serialized);
-    }
-
-    @Override
-    @Test
-    public void testOrder() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-//        assertTrue(serialized.getWrapped().zIsDetached());
-
-    }
-
-    @Override
-    @Test
-    public void testOrderWithDependentsAndLongMethods() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        config = config.withAnnotatedMethods(SerialView.Longer.class);
-
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
     }
 
     @Test
@@ -148,7 +108,7 @@ public class ExampleJacksonReladomoSerializerListTest extends TestTrivialJsonLis
                 "  } ]\n" +
                 "}";
 
-        SerializedList<Order, OrderList> serialized = fromJson(json);
+        SerializedList<Order, OrderList> serialized = toSerializedString(json);
         OrderList list = serialized.getWrapped();
         assertEquals(7, list.size());
         for(int i=0;i<list.size();i++)
@@ -159,86 +119,4 @@ public class ExampleJacksonReladomoSerializerListTest extends TestTrivialJsonLis
         assertNull(OrderFinder.findByPrimaryKey(1));
     }
 
-    @Override
-    public void testOrderWithItems() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepFetches(OrderFinder.items());
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-    }
-
-    @Override
-    public void testOrderWithItemsAndStatus() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepFetches(OrderFinder.orderStatus(), OrderFinder.items());
-        config = config.withAnnotatedMethods(SerialView.Shorter.class);
-
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-    }
-
-    @Override
-    public void testOrderTwoDeep() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepFetches(OrderFinder.orderStatus(), OrderFinder.items().orderItemStatus());
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-    }
-
-    @Override
-    public void testOrderWithDependents() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-    }
-
-    @Override
-    public void testOrderWithDependentsNoMeta() throws Exception
-    {
-        SerializationConfig config = SerializationConfig.shallowWithDefaultAttributes(OrderFinder.getFinderInstance());
-        config = config.withDeepDependents();
-        config = config.withoutMetaData();
-        String sb = toJson(new SerializedList<Order, OrderList>((OrderFinder.findMany(OrderFinder.all())), config));
-
-        SerializedList<Order, OrderList> serialized = fromJson(sb);
-        OrderList list = serialized.getWrapped();
-        assertEquals(7, list.size());
-        for(int i=0;i<list.size();i++)
-        {
-            assertTrue(list.get(i).zIsDetached());
-        }
-    }
 }
