@@ -16,6 +16,7 @@
 
 package com.gs.reladomo.serial.json;
 
+import com.gs.fw.common.mithra.attribute.AsOfAttribute;
 import com.gs.fw.common.mithra.attribute.TimestampAttribute;
 import com.gs.fw.common.mithra.util.serializer.ReladomoDeserializer;
 import com.gs.fw.common.mithra.util.serializer.ReladomoSerializationContext;
@@ -170,7 +171,7 @@ public abstract class JsonDeserializerState
         @Override
         public JsonDeserializerState valueNumberInt(String value, ReladomoDeserializer deserializer, IntDateParser intDateParser) throws IOException
         {
-            if (deserializer.getCurrentAttribute() instanceof TimestampAttribute)
+            if (deserializer.getCurrentAttribute() instanceof TimestampAttribute || deserializer.getCurrentAttribute() instanceof AsOfAttribute)
             {
                 Date date = intDateParser.parseIntAsDate(value);
                 deserializer.setTimestampField(new Timestamp(date.getTime()));
