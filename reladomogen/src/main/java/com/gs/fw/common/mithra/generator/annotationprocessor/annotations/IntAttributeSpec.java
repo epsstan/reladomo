@@ -5,9 +5,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ClassListXmlSpec
+public @interface IntAttributeSpec
 {
-    String xmlPath();
+
+// Inferred
+//    name=" xsd:token [1] ?"
+//    javaType=" xsd:token [1] ?"
+
+    boolean useForOptimisticLocking() default true;
+
+    String columnName();
+
+    boolean nullable() default true;
 }

@@ -2,7 +2,7 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.MithraGenerator;
 import com.gs.fw.common.mithra.generator.MithraXMLObjectTypeParser;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ClassListXmlSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.legacy.LegacyXmlClassListSpec;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class XmlAnnotationProcessor extends AbstractProcessor
+public class LegacyAnnotationProcessor extends AbstractProcessor
 {
     public static final String NON_GENERATED_SRC_DIR = "userSrcDir";
     private Elements elementUtils;
@@ -60,7 +60,7 @@ public class XmlAnnotationProcessor extends AbstractProcessor
     public Set<String> getSupportedAnnotationTypes()
     {
         Set<String> types = new HashSet<String>();
-        types.add(ClassListXmlSpec.class.getCanonicalName());
+        types.add(LegacyXmlClassListSpec.class.getCanonicalName());
         return types;
     }
 
@@ -81,7 +81,7 @@ public class XmlAnnotationProcessor extends AbstractProcessor
 
     private void processClassList(RoundEnvironment roundEnv)
     {
-        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(ClassListXmlSpec.class);
+        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(LegacyXmlClassListSpec.class);
         if (annotatedElements.isEmpty())
         {
             return;
@@ -92,7 +92,7 @@ public class XmlAnnotationProcessor extends AbstractProcessor
         {
             return;
         }
-        ClassListXmlSpec classListAnnotation = element.getAnnotation(ClassListXmlSpec.class);
+        LegacyXmlClassListSpec classListAnnotation = element.getAnnotation(LegacyXmlClassListSpec.class);
         String fullyQualifiedXmlPath = classListAnnotation.xmlPath();
         this.generatedFiles.addAll(generateFiles(filer, fullyQualifiedXmlPath));
     }

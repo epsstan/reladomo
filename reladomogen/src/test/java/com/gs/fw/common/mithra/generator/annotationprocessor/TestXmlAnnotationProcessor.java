@@ -2,7 +2,7 @@ package com.gs.fw.common.mithra.generator.annotationprocessor;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.compiler.StringFileObject;
 import com.gs.fw.common.mithra.generator.annotationprocessor.compiler.TestJavaCompiler;
-import com.gs.fw.common.mithra.generator.annotationprocessor.processor.XmlAnnotationProcessor;
+import com.gs.fw.common.mithra.generator.annotationprocessor.processor.LegacyAnnotationProcessor;
 import com.gs.fw.common.mithra.generator.util.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -85,7 +85,7 @@ public class TestXmlAnnotationProcessor
     {
         List<JavaFileObject> compilationUnits = stageTestFiles();
 
-        XmlAnnotationProcessor processor = new XmlAnnotationProcessor();
+        LegacyAnnotationProcessor processor = new LegacyAnnotationProcessor();
         TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
         Boolean compilationStatus = compiler.compile();
         assertEquals(true, compilationStatus);
@@ -131,7 +131,7 @@ public class TestXmlAnnotationProcessor
 
     private long compile(List<JavaFileObject> compilationUnits)
     {
-        XmlAnnotationProcessor processor = new XmlAnnotationProcessor();
+        LegacyAnnotationProcessor processor = new LegacyAnnotationProcessor();
         TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
         Boolean compilationStatus = compiler.compile();
         assertEquals(true, compilationStatus);
