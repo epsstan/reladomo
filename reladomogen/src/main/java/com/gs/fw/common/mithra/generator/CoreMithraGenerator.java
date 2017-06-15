@@ -187,10 +187,12 @@ public class CoreMithraGenerator extends BaseMithraGenerator
     private void initGeneratedFileManager(GeneratedFileManager generatedFileManager)
     {
         // safety check : all files should be generated with the same manager
+        /*
         if (this.generatedFileManager != null)
         {
             throw new MithraGeneratorException("Attempt to reset file manager. An instance of " + generatedFileManager.getClass().getCanonicalName() + " has already been set");
         }
+        */
         this.generatedFileManager = generatedFileManager;
     }
 

@@ -1,0 +1,15 @@
+<MithraObject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              objectType="transactional"
+              xsi:noNamespaceSchemaLocation="mithraobject.xsd">
+
+    <PackageName>simplebank.domain</PackageName>
+    <ClassName>CustomerAccount</ClassName>
+    <DefaultTable>CUSTOMER_ACCOUNT</DefaultTable>
+
+    <Attribute name="accountId" javaType="int" columnName="ACCOUNT_ID" primaryKey="true"/>
+    <Attribute name="customerId" javaType="int" columnName="CUSTOMER_ID" nullable="false"/>
+    <Attribute name="accountName" javaType="String" columnName="ACCOUNT_NAME" nullable="false" maxLength="48"/>
+    <Attribute name="accountType" javaType="String" columnName="ACCOUNT_TYPE" nullable="false" maxLength="16"/>
+    <Attribute name="balance" javaType="double" columnName="BALANCE"/>
+
+</MithraObject>

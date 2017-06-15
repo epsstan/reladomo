@@ -17,6 +17,7 @@
 
 package com.gs.fw.common.mithra.generator;
 
+import com.gs.fw.common.mithra.generator.writer.GeneratedFileManager;
 import org.apache.tools.ant.BuildException;
 
 import java.io.FileNotFoundException;
@@ -85,6 +86,11 @@ public class MithraGenerator extends AbstractMithraGenerator
     public void setMithraObjectTypeParser(MithraObjectTypeParser mithraObjectTypeParser)
     {
         this.coreGenerator.setMithraObjectTypeParser(mithraObjectTypeParser);
+    }
+
+    public void setGeneratedFileManager(GeneratedFileManager generatedFileManager)
+    {
+        this.coreGenerator.setGeneratedFileManager(generatedFileManager);
     }
 
     public void parseAndValidate() throws FileNotFoundException
