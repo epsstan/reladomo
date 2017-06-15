@@ -439,6 +439,7 @@
         <dependset>
             <srcfileset dir="${root}/reladomogen/src/main/java"/>
             <srcfileset dir="${root}/reladomogen/target/generated-src"/>
+            <srcfileset dir="${root}/reladomogen/src/test/java"/>
             <targetfileset dir="${root}/reladomogen/target/classes"/>
         </dependset>
         <javac destdir="${root}/reladomogen/target/classes"
@@ -457,6 +458,17 @@
             includeAntRuntime="true">
             <src path="${root}/reladomogen/src/main/java"/>
             <src path="${root}/reladomogen/target/generated-src"/>
+            <classpath>
+                <path refid="reladomogen.compile.classpath"/>
+            </classpath>
+        </javac>
+        <javac destdir="${root}/reladomogen/target/classes"
+            debug="true"
+            source="1.5"
+            target="1.5"
+            nowarn="true"
+            includeAntRuntime="true">
+            <src path="${root}/reladomogen/src/test/java"/>
             <classpath>
                 <path refid="reladomogen.compile.classpath"/>
             </classpath>
