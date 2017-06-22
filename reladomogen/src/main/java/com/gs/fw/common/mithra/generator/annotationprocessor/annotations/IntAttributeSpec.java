@@ -9,11 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntAttributeSpec
 {
-
-// Inferred
-//    name=" xsd:token [1] ?"
-//    javaType=" xsd:token [1] ?"
-
     boolean useForOptimisticLocking() default true;
 
     String columnName();

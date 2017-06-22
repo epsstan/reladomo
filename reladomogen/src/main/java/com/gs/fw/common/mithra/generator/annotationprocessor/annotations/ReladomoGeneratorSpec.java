@@ -6,8 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /*
-    Used to add generation properties to a domain (list)
- */
+    Used to add generation properties to a domain (list).
+    This is very similar to the reladom-gen xml tag.
+
+    <reladomo-gen xml="${root}/reladomo/src/test/reladomo-xml/MithraClassListToImport.xml"
+            generatedDir="${root}/reladomo/target/test-generated-onheap-src"
+            nonGeneratedDir="${root}/reladomo/src/test/java"
+            generateGscListMethod="${mithra.generateGscListMethod}"
+            generateConcreteClasses="${reladomo.generateConcreteClasses}">
+    </reladomo-gen>
+*/
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,13 +29,4 @@ public @interface ReladomoGeneratorSpec
 
     boolean generateConcreteClasses() default true;
 }
-
-/*
-    <reladomo-gen xml="${root}/reladomo/src/test/reladomo-xml/MithraClassListToImport.xml"
-            generatedDir="${root}/reladomo/target/test-generated-onheap-src"
-            nonGeneratedDir="${root}/reladomo/src/test/java"
-            generateGscListMethod="${mithra.generateGscListMethod}"
-            generateConcreteClasses="${reladomo.generateConcreteClasses}">
-        </reladomo-gen>
-*/
 

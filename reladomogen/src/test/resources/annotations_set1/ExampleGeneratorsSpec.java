@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
+package annotations_set1;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorsSpec;
@@ -13,6 +13,6 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Reladom
                 )
         }
 )
-public interface ExampleReladomoGeneratorsSpec
+public interface ExampleGeneratorsSpec
 {
 }

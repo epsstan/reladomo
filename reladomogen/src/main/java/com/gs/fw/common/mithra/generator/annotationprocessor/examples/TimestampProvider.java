@@ -4,11 +4,11 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
-public class ExampleInfinityTimestampProvider
+public class TimestampProvider
 {
-    private static final Timestamp INFINITY_DATE = ExampleInfinityTimestampProvider.create(9999, 11, 1, Calendar.PM, 23, 59, 0, 0);
+    private static final Timestamp INFINITY_DATE = TimestampProvider.create(9999, 11, 1, Calendar.PM, 23, 59, 0, 0);
 
-    private ExampleInfinityTimestampProvider()
+    private TimestampProvider()
     {
         throw new UnsupportedOperationException("utility methods only -- not instantiable");
     }

@@ -2,14 +2,16 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.MithraGenerator;
 import com.gs.fw.common.mithra.generator.MithraXMLObjectTypeParser;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorSpec;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoObjectSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.sun.tools.javac.code.Symbol;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -62,7 +64,7 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
     public Set<String> getSupportedAnnotationTypes()
     {
         Set<String> types = new HashSet<String>();
-        types.add(ReladomoGeneratorSpec.class.getCanonicalName());
+        types.add(ReladomoGeneratorsSpec.class.getCanonicalName());
         return types;
     }
 
@@ -82,7 +84,7 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
 
     private void process(RoundEnvironment roundEnv)
     {
-        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(ReladomoGeneratorSpec.class);
+        Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(ReladomoGeneratorsSpec.class);
         if (annotatedElements.isEmpty())
         {
             return;
@@ -92,21 +94,76 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
             messager.printMessage(Diagnostic.Kind.ERROR, "Expected 1 but found " + annotatedElements.size() + " generator specs in the classpath");
             return;
         }
-        Element generatorSpec = annotatedElements.iterator().next();
-        if (generatorSpec.getKind() != ElementKind.INTERFACE)
+        Element generatorsSpec = annotatedElements.iterator().next();
+        if (generatorsSpec.getKind() != ElementKind.INTERFACE)
         {
-            messager.printMessage(Diagnostic.Kind.ERROR, ReladomoGeneratorSpec.class.getSimpleName() + " annotation can be applied to interfaces only");
+            messager.printMessage(Diagnostic.Kind.ERROR, ReladomoGeneratorsSpec.class.getSimpleName() + " annotation can be applied to interfaces only");
             return;
         }
-        processGeneratorSpec(generatorSpec);
+        processGeneratorsSpec(generatorsSpec);
     }
 
-    private void processGeneratorSpec(Element element)
+    private void processGeneratorsSpec(Element element)
     {
-        ReladomoGeneratorSpec generatorSpec = element.getAnnotation(ReladomoGeneratorSpec.class);
-        
+        ReladomoGeneratorsSpec generatorsSpec = element.getAnnotation(ReladomoGeneratorsSpec.class);
+        List<? extends Element> e = element.getEnclosedElements();
+        ReladomoGeneratorSpec[] generators = generatorsSpec.generators();
+        if (generators == null || generators.length == 0)
+        {
+            messager.printMessage(Diagnostic.Kind.ERROR, ReladomoGeneratorsSpec.class.getSimpleName() + " annotation can be applied to interfaces only");
+            return;
+        }
+        for (ReladomoGeneratorSpec spec : generators)
+        {
+            processGeneratorSpec(spec);
+        }
     }
 
+    private void processGeneratorSpec(ReladomoGeneratorSpec generatorSpec)
+    {
+        boolean b = generatorSpec.generateConcreteClasses();
+        String s = generatorSpec.generatedDir();
+        boolean b1 = generatorSpec.generateGscListMethod();
+        try
+        {
+            generatorSpec.domain();
+        }
+        catch (MirroredTypeException e)
+        {
+            DeclaredType declaredType = (DeclaredType) e.getTypeMirror();
+            Element lisSpecElement = typeUtils.asElement(declaredType);
+            ReladomoListSpec listSpec = lisSpecElement.getAnnotation(ReladomoListSpec.class);
+            ObjectResourceSpec[] objectResourceSpecs = listSpec.resources();
+            for (ObjectResourceSpec objectResourceSpec : objectResourceSpecs)
+            {
+                try
+                {
+                    objectResourceSpec.name();
+                }
+                catch (MirroredTypeException e1)
+                {
+                    declaredType = (DeclaredType) e1.getTypeMirror();
+                    Element objectSpecElement = typeUtils.asElement(declaredType);
+                    ReladomoObjectSpec objectSpec = objectSpecElement.getAnnotation(ReladomoObjectSpec.class);
+                    String tableName = objectSpec.defaultTableName();
+                    List<? extends Element> reladomoObjectSpecElements = objectSpecElement.getEnclosedElements();
+                    for (Element reladomoObjectSpecElement : reladomoObjectSpecElements)
+                    {
+                        AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
+                        if (asOfAttributeSpec != null)
+                        {
+                            System.out.println(asOfAttributeSpec.fromColumnName());
+                        }
+                        StringAttributeSpec stringAttributeSpec = reladomoObjectSpecElement.getAnnotation(StringAttributeSpec.class);
+                        if (stringAttributeSpec != null)
+                        {
+                            System.out.println(stringAttributeSpec.columnName());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private void processAnnotatedClass(Element annotatedElement)
     {

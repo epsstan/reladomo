@@ -1,10 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
-import com.gs.fw.common.mithra.generator.metamodel.MithraBaseObjectType;
-import com.gs.fw.common.mithra.generator.metamodel.MithraGeneratorParserException;
-import com.gs.fw.common.mithra.generator.metamodel.MithraInterfaceType;
-import com.gs.fw.common.mithra.generator.metamodel.MithraType;
+import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.AwaitingThreadExecutor;
 import com.gs.fw.common.mithra.generator.util.ChopAndStickResource;
 import com.gs.fw.common.mithra.generator.util.FullFileBuffer;
@@ -91,7 +88,7 @@ public class AnnotationParser implements MithraObjectTypeParser
     {
         try
         {
-            parserAnnotations();
+            parseAnnotations();
             //todo : remove file
             return new File("/tmp/foo");
         }
@@ -101,7 +98,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    public void parserAnnotations()
+    public void parseAnnotations()
     {
         MithraType result;
         try
@@ -139,6 +136,8 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private int parseMithraObjects() throws FileNotFoundException
     {
+        MithraObjectResourceType mithraObjectResourceType = new MithraObjectResourceType();
+        mithraObjectResourceType.isEnableOffHeap();
         /*
         List<MithraObjectResourceType> mithraObjectList = mithraType.getMithraObjectResources();
         chopAndStickResource.resetSerialResource();
