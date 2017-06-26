@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
     This is very similar to the reladom-gen xml tag.
 
     <reladomo-gen xml="${root}/reladomo/src/test/reladomo-xml/MithraClassListToImport.xml"
-            generatedDir="${root}/reladomo/target/test-generated-onheap-src"
+            nonGeneratedDir="${root}/reladomo/target/test-generated-onheap-src"
             nonGeneratedDir="${root}/reladomo/src/test/java"
             generateGscListMethod="${mithra.generateGscListMethod}"
             generateConcreteClasses="${reladomo.generateConcreteClasses}">
@@ -23,7 +23,7 @@ public @interface ReladomoGeneratorSpec
 {
     Class domain();
 
-    String generatedDir();
+    String nonGeneratedDir();
 
     boolean generateGscListMethod() default false;
 

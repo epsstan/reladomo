@@ -2,7 +2,6 @@ package com.gs.fw.common.mithra.generator.annotationprocessor;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.compiler.StringFileObject;
 import com.gs.fw.common.mithra.generator.annotationprocessor.compiler.TestJavaCompiler;
-import com.gs.fw.common.mithra.generator.annotationprocessor.processor.LegacyAnnotationProcessor;
 import com.gs.fw.common.mithra.generator.annotationprocessor.processor.ReladomoAnnotationProcessor;
 import com.gs.fw.common.mithra.generator.util.FileUtils;
 import org.junit.After;
@@ -29,7 +28,7 @@ public class TestReladomoAnnotationProcessor
     @Before
     public void setup() throws IOException
     {
-        tempDir = new File(System.getProperty("java.io.tmpdir"));
+        tempDir = new File("/tmp/" + System.currentTimeMillis());
         tempDir.mkdirs();
 
         userSrcDir = new File(tempDir, "src/main/java");
@@ -40,12 +39,14 @@ public class TestReladomoAnnotationProcessor
 
         targetClassesDir = new File(tempDir, "target/classes");
         targetClassesDir.mkdirs();
+
+        System.out.println("Using temp dir " + tempDir.getAbsolutePath());
     }
 
     @After
     public void cleanup()
     {
-        FileUtils.deleteDir(tempDir);
+        //FileUtils.deleteDir(tempDir);
     }
 
     private StringFileObject addFileToUserSrcDir(String srcPath, String targetPath, String className) throws URISyntaxException, IOException
@@ -87,55 +88,5 @@ public class TestReladomoAnnotationProcessor
         TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
         Boolean compilationStatus = compiler.compile();
         assertEquals(true, compilationStatus);
-    }
-
-    private List<JavaFileObject> readSrcFiles() throws URISyntaxException, IOException
-    {
-        File file1 = new File(userSrcDir, "simplebank/specs/MyClassListSpec.java");
-        File file2 = new File(userSrcDir, "simplebank/domain/Customer.java");
-        File file3 = new File(userSrcDir, "simplebank/domain/CustomerAccount.java");
-
-        StringFileObject obj1 = new StringFileObject("MyClassListSpec", FileUtils.readFileAsString(file1));
-        StringFileObject obj2 = new StringFileObject("Customer", FileUtils.readFileAsString(file2));
-        StringFileObject obj3 = new StringFileObject("CustomerAccount", FileUtils.readFileAsString(file3));
-
-        List<JavaFileObject> javaFileObjectList = new ArrayList<JavaFileObject>();
-        javaFileObjectList.add(obj1);
-        javaFileObjectList.add(obj2);
-        javaFileObjectList.add(obj3);
-
-        return javaFileObjectList;
-    }
-
-    @Test
-    public void testConsecutiveGeneration() throws URISyntaxException, IOException
-    {
-        List<JavaFileObject> compilationUnits = stageTestFiles();
-
-        //compile for the first time
-        long generatedCustomerModificationTime = compile(compilationUnits);
-
-        //clean the classes and generated srcs from the previous compile
-        FileUtils.deleteFilesInDir(targetClassesDir);
-        FileUtils.deleteFilesInDir(targetGeneratedSrcDir);
-
-        //compile for the second time - include the new src files generated from the first compilatiom
-        compilationUnits = readSrcFiles();
-
-        long generatedCustomerModificationTime2 = compile(compilationUnits);
-
-        assertEquals(generatedCustomerModificationTime, generatedCustomerModificationTime2);
-    }
-
-    private long compile(List<JavaFileObject> compilationUnits)
-    {
-        LegacyAnnotationProcessor processor = new LegacyAnnotationProcessor();
-        TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
-        Boolean compilationStatus = compiler.compile();
-        assertEquals(true, compilationStatus);
-
-        File generatedCustomer = new File(userSrcDir, "simplebank/domain/Customer.java");
-        generatedCustomer.exists();
-        return  generatedCustomer.lastModified();
     }
 }

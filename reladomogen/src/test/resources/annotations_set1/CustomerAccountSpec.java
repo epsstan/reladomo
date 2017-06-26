@@ -5,25 +5,26 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import java.sql.Timestamp;
 
 @ReladomoObjectSpec(
-    packageName = "com.examples.reladomogen",
+    packageName = "annotations_set1",
     defaultTableName = "CUSTOMER_ACCOUNT"
 )
 public interface CustomerAccountSpec
 {
     @AsOfAttributeSpec(fromColumnName = "FROM_Z", toColumnName = "THRU_Z",
             toIsInclusive = false, isProcessingDate = false,
-            infinityDate = "[com.gs.fw.common.mithra.generator.annotationprocessor.examples.TimestampProvider.getInfinityDate()",
-            defaultIfNotSpecified="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.TimestampProvider.getInfinityDate()]",
+            infinityDate = "[annotations_set1.TimestampProvider.getInfinityDate()]",
+            defaultIfNotSpecified="[annotations_set1.TimestampProvider.getInfinityDate()]",
             futureExpiringRowsExist = true)
     Timestamp businessDate();
 
     @AsOfAttributeSpec(fromColumnName = "IN_Z", toColumnName = "OUT_Z",
             toIsInclusive = false, isProcessingDate = true,
-            infinityDate = "[com.gs.fw.common.mithra.generator.annotationprocessor.examples.TimestampProvider.getInfinityDate()",
-            defaultIfNotSpecified="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.TimestampProvider.getInfinityDate()]",
+            infinityDate = "[annotations_set1.TimestampProvider.getInfinityDate()]",
+            defaultIfNotSpecified="[annotations_set1.TimestampProvider.getInfinityDate()]",
             futureExpiringRowsExist = true)
     Timestamp processingDate();
 
+    @PrimaryKeySpec()
     @IntAttributeSpec(columnName = "ACCOUNT_ID")
     int accountId();
 

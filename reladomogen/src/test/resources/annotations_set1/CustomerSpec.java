@@ -5,7 +5,7 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import java.sql.Timestamp;
 
 @ReladomoObjectSpec(
-    packageName = "com.examples.reladomogen",
+        packageName = "annotations_set1",
     defaultTableName = "CUSTOMER"
 )
 public interface CustomerSpec
@@ -24,6 +24,7 @@ public interface CustomerSpec
     )
     Timestamp processingDate();
 
+    @PrimaryKeySpec()
     @IntAttributeSpec(columnName = "CUSTOMER_ID")
     int customerId();
 
@@ -36,6 +37,7 @@ public interface CustomerSpec
     @StringAttributeSpec(columnName = "COUNTRY", maxLength = 200, nullable = true)
     String country();
 
+    /*
     @RelationshipSpec(
         cardinality = RelationshipSpec.Cardinality.OneToMany,
         contract = "this.customerId == CustomerAccount.customerId",
@@ -44,4 +46,5 @@ public interface CustomerSpec
 
     )
     CustomerAccountSpec accounts();
+    */
 }

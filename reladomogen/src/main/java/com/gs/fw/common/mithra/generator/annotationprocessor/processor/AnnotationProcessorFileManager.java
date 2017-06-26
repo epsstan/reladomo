@@ -63,7 +63,7 @@ public class AnnotationProcessorFileManager implements GeneratedFileManager
         Writer writer = sourceFile.openWriter();
         writer.write(new String(fileData));
         writer.close();
-        return new GeneratedFile(packageName, className, sourceFile.toUri());
+        return new GeneratedFile(packageName, className + fileSuffix, sourceFile.toUri());
     }
 
     private void createFileIfNotInUserSrcDir(String packageName, String className, String fileSuffix, byte[] fileData) throws IOException

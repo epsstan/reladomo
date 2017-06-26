@@ -7,7 +7,7 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Reladom
         generators = {
                 @ReladomoGeneratorSpec(
                         domain = CustomerDomainListSpec.class,
-                        generatedDir =  "/tmp/foobar",
+                        nonGeneratedDir =  "/tmp/foobar",
                         generateConcreteClasses =  false,
                         generateGscListMethod =  true
                 )

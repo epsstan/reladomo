@@ -7,16 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ObjectResourceSpec
+public @interface PrimaryKeySpec
 {
-    Class name();
-
-    boolean replicated() default false;
-
-    boolean generateInterfaces() default false;
-
-    boolean enableOffHeap() default false;
-
-    boolean  readOnlyInterfaces() default false;
 
 }

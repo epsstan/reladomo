@@ -26,5 +26,15 @@ public @interface AsOfAttributeSpec
 
     String defaultIfNotSpecified();
 
+    boolean finalGetters() default false;
+
+    boolean infinityIsNull() default false;
+
+    TimestampPrecision timestampPrecision() default TimestampPrecision.nanonsecond;
+
+    TimezoneConversion timezoneConversion() default TimezoneConversion.none;
+
+    boolean poolable() default true;
+
     PropertySpec[] properties() default {};
 }

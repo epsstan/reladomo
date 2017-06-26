@@ -112,6 +112,7 @@ public class MithraGenerator extends AbstractMithraGenerator
             }
         };
 
+        /*
         MithraObjectTypeParser parser = new MithraXMLObjectTypeParser("H:/projects/Mithra/Mithra/xml/mithra/test/MithraClassList.xml");
 
         gen.setMithraObjectTypeParser(parser);
@@ -135,5 +136,32 @@ public class MithraGenerator extends AbstractMithraGenerator
 
         gen.execute();
         System.out.println("time: "+(System.currentTimeMillis() - startTime));
+        */
+
+        MithraObjectTypeParser parser = new MithraXMLObjectTypeParser("/tmp/new-atp/xmls/SimpleBankClassList.xml");
+
+        gen.setMithraObjectTypeParser(parser);
+        gen.setGeneratedDir("/tmp/new-atp/abstract-src");
+        gen.setNonGeneratedDir("/tmp/new-atp/concrete-src");
+        gen.setGenerateGscListMethod(true);
+        gen.setCodeFormat(CoreMithraGenerator.FORMAT_FAST);
+
+        /*
+        MithraGeneratorImport generatorImport = new MithraGeneratorImport();
+        //generatorImport.setDir("/Users/stanle/github_ws/reladomo/reladomo/src/test/reladomo-xml");
+        generatorImport.setDir("/Users/stanle/github_ws/reladomo_stanle.git/reladomo/src/test/reladomo-xml/");
+        generatorImport.setFilename("MithraClassListToImport.xml");
+        gen.addConfiguredMithraImport(generatorImport);
+
+        generatorImport = new MithraGeneratorImport();
+        //generatorImport.setDir("H:/projects/Mithra/Mithra/xml/mithra/test/testmithraimport");
+        generatorImport.setDir("/Users/stanle/github_ws/reladomo_stanle.git/reladomo/src/test/reladomo-xml/testmithraimport");
+        generatorImport.setFilename("MithraTestImportClassList.xml");
+        gen.addConfiguredMithraImport(generatorImport);
+        */
+
+        gen.execute();
+
+
     }
 }

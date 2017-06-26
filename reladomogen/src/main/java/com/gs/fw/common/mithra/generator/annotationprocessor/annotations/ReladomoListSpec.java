@@ -13,4 +13,10 @@ import java.lang.annotation.Target;
 public @interface ReladomoListSpec
 {
     ObjectResourceSpec[] resources();
+
+    boolean generateInterfaces() default false;
+
+    boolean readOnlyInterfaces() default false;
+
+    boolean enableOffHeap() default false;
 }

@@ -1,6 +1,9 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ObjectResourceSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoObjectSpec;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.AwaitingThreadExecutor;
 import com.gs.fw.common.mithra.generator.util.ChopAndStickResource;
@@ -90,7 +93,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             parseAnnotations();
             //todo : remove file
-            return new File("/tmp/foo");
+            return new File("/tmp/foo/a.xml");
         }
         catch (Throwable e)
         {
@@ -100,14 +103,13 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     public void parseAnnotations()
     {
-        MithraType result;
         try
         {
             //todo : fix logger
             //this.logger.debug(obj.getClass().getName() + ": " + MithraType.class.getName());
 
             long start = System.currentTimeMillis();
-            int normalObjects = this.parseMithraObjects();
+            int normalObjects = this.countMithraObjects();
             int pureObjects = this.parseMithraPureObjects();
             int tempObjects = this.parseMithraTempObjects();
             int embeddedObjects = this.parseMithraEmbeddedValueObjects();
@@ -134,8 +136,33 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
+    public void addMithraObject(MithraObject mithraObject, String name, String objectFileName,
+                                ObjectResourceSpec objectResourceSpec,
+                                ReladomoObjectSpec objectSpec,
+                                ReladomoListSpec reladomoListSpec)
+    {
+        boolean isGenerateInterfaces = !objectResourceSpec.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResourceSpec.generateInterfaces();
+        boolean enableOffHeap = !objectResourceSpec.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResourceSpec.enableOffHeap();
+        MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, null, isGenerateInterfaces, ignorePackageNamingConvention, AnnotationParser.this.logger);
+        wrapper.setGenerateFileHeaders(generateFileHeaders);
+        wrapper.setReplicated(objectResourceSpec.replicated());
+        wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
+        wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
+        wrapper.setReadOnlyInterfaces(objectResourceSpec.readOnlyInterfaces() ? objectResourceSpec.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
+        wrapper.setDefaultFinalGetters(defaultFinalGetters);
+        wrapper.setEnableOffHeap(enableOffHeap);
+        mithraObjects.put(name, wrapper);
+    }
+
+    private int countMithraObjects()
+    {
+        return mithraObjects.size();
+    }
+
     private int parseMithraObjects() throws FileNotFoundException
     {
+        MithraBaseObjectType mithraBaseObjectType = new MithraBaseObjectType();
+        mithraBaseObjectType.getAttributes();
         MithraObjectResourceType mithraObjectResourceType = new MithraObjectResourceType();
         mithraObjectResourceType.isEnableOffHeap();
         /*
