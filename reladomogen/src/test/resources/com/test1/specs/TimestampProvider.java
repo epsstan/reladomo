@@ -1,4 +1,4 @@
-package annotations_set1;
+package com.test1.specs;
 
 import java.sql.Date;
 import java.sql.Timestamp;

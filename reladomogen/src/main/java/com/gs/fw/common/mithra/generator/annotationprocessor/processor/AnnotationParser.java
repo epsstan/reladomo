@@ -1,15 +1,14 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ObjectResourceSpec;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoObjectSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.metamodel.*;
-import com.gs.fw.common.mithra.generator.util.AwaitingThreadExecutor;
-import com.gs.fw.common.mithra.generator.util.ChopAndStickResource;
-import com.gs.fw.common.mithra.generator.util.FullFileBuffer;
-import com.gs.fw.common.mithra.generator.util.SerialResource;
+import com.gs.fw.common.mithra.generator.util.*;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.util.Types;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,6 +22,7 @@ import static org.javacc.parser.JavaCCGlobals.fileName;
 
 public class AnnotationParser implements MithraObjectTypeParser
 {
+    private final File faleClassList;
     private CRC32 crc32 = new CRC32();
 
     private static final int IO_THREADS = 1;
@@ -49,6 +49,16 @@ public class AnnotationParser implements MithraObjectTypeParser
     private ThreadLocal<FullFileBuffer> fullFileBufferThreadLocal = new ThreadLocal<FullFileBuffer>();
 
     private Logger logger;
+
+    private Types typeUtils;
+    private ReladomoListSpec reladomoListSpec;
+
+    public AnnotationParser(Types typeUtils, ReladomoListSpec reladomoListSpec, File faleClassList)
+    {
+        this.typeUtils = typeUtils;
+        this.reladomoListSpec = reladomoListSpec;
+        this.faleClassList = faleClassList;
+    }
 
     public void setLogger(Logger logger)
     {
@@ -92,8 +102,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         try
         {
             parseAnnotations();
-            //todo : remove file
-            return new File("/tmp/foo/a.xml");
+            return faleClassList;
         }
         catch (Throwable e)
         {
@@ -109,7 +118,7 @@ public class AnnotationParser implements MithraObjectTypeParser
             //this.logger.debug(obj.getClass().getName() + ": " + MithraType.class.getName());
 
             long start = System.currentTimeMillis();
-            int normalObjects = this.countMithraObjects();
+            int normalObjects = this.parseMithraObjects();
             int pureObjects = this.parseMithraPureObjects();
             int tempObjects = this.parseMithraTempObjects();
             int embeddedObjects = this.parseMithraEmbeddedValueObjects();
@@ -136,69 +145,40 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    public void addMithraObject(MithraObject mithraObject, String name, String objectFileName,
-                                ObjectResourceSpec objectResourceSpec,
-                                ReladomoObjectSpec objectSpec,
-                                ReladomoListSpec reladomoListSpec)
-    {
-        boolean isGenerateInterfaces = !objectResourceSpec.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResourceSpec.generateInterfaces();
-        boolean enableOffHeap = !objectResourceSpec.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResourceSpec.enableOffHeap();
-        MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, null, isGenerateInterfaces, ignorePackageNamingConvention, AnnotationParser.this.logger);
-        wrapper.setGenerateFileHeaders(generateFileHeaders);
-        wrapper.setReplicated(objectResourceSpec.replicated());
-        wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
-        wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
-        wrapper.setReadOnlyInterfaces(objectResourceSpec.readOnlyInterfaces() ? objectResourceSpec.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
-        wrapper.setDefaultFinalGetters(defaultFinalGetters);
-        wrapper.setEnableOffHeap(enableOffHeap);
-        mithraObjects.put(name, wrapper);
-    }
-
-    private int countMithraObjects()
-    {
-        return mithraObjects.size();
-    }
-
     private int parseMithraObjects() throws FileNotFoundException
     {
-        MithraBaseObjectType mithraBaseObjectType = new MithraBaseObjectType();
-        mithraBaseObjectType.getAttributes();
-        MithraObjectResourceType mithraObjectResourceType = new MithraObjectResourceType();
-        mithraObjectResourceType.isEnableOffHeap();
-        /*
-        List<MithraObjectResourceType> mithraObjectList = mithraType.getMithraObjectResources();
+        final ObjectResourceSpec[] objectResourceSpecs = reladomoListSpec.resources();
         chopAndStickResource.resetSerialResource();
-        for (int i = 0; i <mithraObjectList.size(); i++)
+        for (int i = 0 ; i < objectResourceSpecs.length ; i++)
         {
-            final MithraObjectResourceType mithraObjectResourceType = mithraObjectList.get(i);
-            final String objectName = mithraObjectResourceType.getName();
+            final ObjectResourceSpec objectResourceSpec = objectResourceSpecs[i];
             getExecutor().submit(new GeneratorTask(i)
             {
                 public void run()
                 {
-                    MithraBaseObjectType mithraObject = parseMithraObject(objectName, mithraObjects, fileProvider, this, "normal");
-                    if (mithraObject != null)
-                    {
-                        String objectFileName = objectName + ".xml";
-                        boolean isGenerateInterfaces = !mithraObjectResourceType.isGenerateInterfacesSet() ? mithraType.isGenerateInterfaces() : mithraObjectResourceType.isGenerateInterfaces();
-                        boolean enableOffHeap = !mithraObjectResourceType.isEnableOffHeapSet() ? mithraType.isEnableOffHeap() || forceOffHeap : mithraObjectResourceType.isEnableOffHeap();
-                        MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, importSource, isGenerateInterfaces, ignorePackageNamingConvention, MithraXMLObjectTypeParser.this.logger);
-                        wrapper.setGenerateFileHeaders(generateFileHeaders);
-                        wrapper.setReplicated(mithraObjectResourceType.isReplicated());
-                        wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
-                        wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
-                        wrapper.setReadOnlyInterfaces(mithraObjectResourceType.isReadOnlyInterfacesSet() ? mithraObjectResourceType.isReadOnlyInterfaces() : mithraType.isReadOnlyInterfaces());
-                        wrapper.setDefaultFinalGetters(defaultFinalGetters);
-                        wrapper.setEnableOffHeap(enableOffHeap);
-                        mithraObjects.put(mithraObjectResourceType.getName(), wrapper);
-                    }
+                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = getReladomoObjectSpec(objectResourceSpec);
+                    MithraObject mithraObject = processReladomoObject(reladomoObjectSpecDetails);
+
+                    String name = reladomoObjectSpecDetails.name;
+                    String objectFileName = reladomoObjectSpecDetails.specName;
+
+                    boolean isGenerateInterfaces = !objectResourceSpec.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResourceSpec.generateInterfaces();
+                    boolean enableOffHeap = !objectResourceSpec.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResourceSpec.enableOffHeap();
+                    MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, null, isGenerateInterfaces, ignorePackageNamingConvention, AnnotationParser.this.logger);
+                    wrapper.setGenerateFileHeaders(generateFileHeaders);
+                    wrapper.setReplicated(objectResourceSpec.replicated());
+                    wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
+                    wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
+                    wrapper.setReadOnlyInterfaces(objectResourceSpec.readOnlyInterfaces() ? objectResourceSpec.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
+                    wrapper.setDefaultFinalGetters(defaultFinalGetters);
+                    wrapper.setEnableOffHeap(enableOffHeap);
+                    mithraObjects.put(name, wrapper);
+
                 }
             });
         }
         waitForExecutorWithCheck();
-        return mithraObjectList.size();
-        */
-        return 0;
+        return objectResourceSpecs.length;
     }
 
     private int parseMithraPureObjects()
@@ -499,7 +479,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         return msg;
     }
 
-    /*
     private void waitForExecutorWithCheck()
     {
         getExecutor().waitUntilDone();
@@ -508,7 +487,6 @@ public class AnnotationParser implements MithraObjectTypeParser
             throw new MithraGeneratorException("exception while generating", executorError);
         }
     }
-    */
 
     private void closeIs(InputStream is)
     {
@@ -530,7 +508,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         return chopAndStickResource;
     }
 
-    /*
     public AwaitingThreadExecutor getExecutor()
     {
         if (executor == null)
@@ -540,14 +517,13 @@ public class AnnotationParser implements MithraObjectTypeParser
                 public void handleException(AutoShutdownThreadExecutor executor, Runnable target, Throwable exception)
                 {
                     executor.shutdownNow();
-                    MithraXMLObjectTypeParser.this.logger.error("Error in runnable target. Shutting down queue "+exception.getClass().getName()+" :"+exception.getMessage());
+                    AnnotationParser.this.logger.error("Error in runnable target. Shutting down queue "+exception.getClass().getName()+" :"+exception.getMessage());
                     executorError = exception;
                 }
             });
         }
         return executor;
     }
-    */
 
     private class ParentClassComparator implements Comparator
     {
@@ -617,5 +593,166 @@ public class AnnotationParser implements MithraObjectTypeParser
             fullFileBufferThreadLocal.set(result);
         }
         return result;
+    }
+
+    static class ReladomoObjectSpecDetails
+    {
+        private final ReladomoObjectSpec reladomoObjectSpec;
+        private final List<? extends Element> enclosedElements;
+        private final String name;
+        private final String specName;
+
+        public ReladomoObjectSpecDetails(String name, String specName, ReladomoObjectSpec reladomoObjectSpec, List<? extends Element> enclosedElements)
+        {
+            this.name = name;
+            this.specName = specName;
+            this.reladomoObjectSpec = reladomoObjectSpec;
+            this.enclosedElements = enclosedElements;
+        }
+    }
+
+    private ReladomoObjectSpecDetails getReladomoObjectSpec(ObjectResourceSpec objectResourceSpec)
+    {
+        try
+        {
+            objectResourceSpec.name();
+            throw new RuntimeException("Failed to get type mirror exception");
+        }
+        catch (MirroredTypeException e1)
+        {
+            DeclaredType declaredType = (DeclaredType) e1.getTypeMirror();
+            Element objectSpecElement = typeUtils.asElement(declaredType);
+            String specName = objectSpecElement.getSimpleName().toString();
+            if (!specName.endsWith("Spec"))
+            {
+                throw new IllegalArgumentException("ReladmoObjectSpec class name as to end with 'Spec'. Found name " + specName);
+            }
+            return new ReladomoObjectSpecDetails(
+                    specName.replaceAll("Spec", ""),
+                    specName,
+                    objectSpecElement.getAnnotation(ReladomoObjectSpec.class),
+                    objectSpecElement.getEnclosedElements());
+        }
+    }
+
+
+    private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
+    {
+        ReladomoObjectSpec reladomoObjectSpec = reladomoObjectSpecDetails.reladomoObjectSpec;
+
+        MithraObject mithraObject = new MithraObject();
+        mithraObject.setPackageName(reladomoObjectSpec.packageName());
+        mithraObject.setClassName(reladomoObjectSpecDetails.name);
+        mithraObject.setDefaultTable(reladomoObjectSpec.defaultTableName());
+
+        List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
+        List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
+
+        for (Element reladomoObjectSpecElement : reladomoObjectSpecDetails.enclosedElements)
+        {
+            boolean primaryKey = isPrimaryKeyAttribute(reladomoObjectSpecElement);
+            String name = reladomoObjectSpecElement.getSimpleName().toString();
+            AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
+            if (asOfAttributeSpec != null)
+            {
+                asOfAttributeTypes.add(makeAsOfAttribute(asOfAttributeSpec, name));
+            }
+            StringAttributeSpec stringAttributeSpec  = reladomoObjectSpecElement.getAnnotation(StringAttributeSpec.class);
+            if (stringAttributeSpec != null)
+            {
+                attributeTypes.add(makeStringAttribute(stringAttributeSpec, name, primaryKey));
+            }
+            IntAttributeSpec intAttributeSpec  = reladomoObjectSpecElement.getAnnotation(IntAttributeSpec.class);
+            if (intAttributeSpec != null)
+            {
+                attributeTypes.add(makeIntAttribute(intAttributeSpec, name, primaryKey));
+            }
+        }
+        mithraObject.setAsOfAttributes(asOfAttributeTypes);
+        mithraObject.setAttributes(attributeTypes);
+        return mithraObject;
+    }
+
+    private boolean isPrimaryKeyAttribute(Element reladomoObjectSpecElement)
+    {
+        PrimaryKeySpec primaryKeySpec = reladomoObjectSpecElement.getAnnotation(PrimaryKeySpec.class);
+        if (primaryKeySpec == null)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private AttributeType makeStringAttribute(StringAttributeSpec spec, String name, boolean primaryKey)
+    {
+        AttributeType attributeType = new AttributeType();
+        attributeType.setName(name);
+        attributeType.setJavaType("String");
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setMaxLength(spec.maxLength());
+        attributeType.setTruncate(spec.truncate());
+        attributeType.setTrim(spec.trim());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setPrimaryKey(primaryKey);
+
+        //todo : is properties applicable ?
+
+        return attributeType;
+    }
+
+    private AttributeType makeIntAttribute(IntAttributeSpec spec, String name, boolean primaryKey)
+    {
+        AttributeType attributeType = new AttributeType();
+        attributeType.setName(name);
+        attributeType.setJavaType("int");
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setUseForOptimisticLocking(spec.useForOptimisticLocking());
+        attributeType.setPrimaryKey(primaryKey);
+
+        //todo : is properties applicable ?
+        //todo : precision/scale
+
+        return attributeType;
+    }
+
+    private AsOfAttributeType makeAsOfAttribute(AsOfAttributeSpec spec, String name)
+    {
+        AsOfAttributeType asOfAttributeType = new AsOfAttributeType();
+        asOfAttributeType.setName(name);
+        asOfAttributeType.setSetAsString(spec.setAsString());
+        asOfAttributeType.setFromColumnName(spec.fromColumnName());
+        asOfAttributeType.setToColumnName(spec.toColumnName());
+        asOfAttributeType.setFinalGetter(spec.finalGetters());
+        asOfAttributeType.setDefaultIfNotSpecified(spec.defaultIfNotSpecified());
+        asOfAttributeType.setFutureExpiringRowsExist(spec.futureExpiringRowsExist());
+        asOfAttributeType.setInfinityDate(spec.infinityDate());
+        asOfAttributeType.setInfinityIsNull(spec.infinityIsNull());
+        asOfAttributeType.setIsProcessingDate(spec.isProcessingDate());
+        asOfAttributeType.setToIsInclusive(spec.toIsInclusive());
+        asOfAttributeType.setTimezoneConversion(spec.timezoneConversion().toType());
+        asOfAttributeType.setTimestampPrecision(spec.timestampPrecision().toType());
+        asOfAttributeType.setPoolable(spec.poolable());
+        asOfAttributeType.setProperties(extractProperties(spec));
+        return asOfAttributeType;
+    }
+
+    private List<PropertyType> extractProperties(AsOfAttributeSpec spec)
+    {
+        List<PropertyType> propertyTypes = new ArrayList<PropertyType>();
+        for (PropertySpec propertySpec : spec.properties())
+        {
+            PropertyType propType = new PropertyType();
+            propType.setKey(propertySpec.key());
+            propType.setValue(propertySpec.value());
+            propertyTypes.add(propType);
+        }
+        return propertyTypes;
     }
 }

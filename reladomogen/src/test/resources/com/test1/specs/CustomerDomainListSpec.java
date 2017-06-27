@@ -1,4 +1,4 @@
-package annotations_set1;
+package com.test1.specs;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ObjectResourceSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;

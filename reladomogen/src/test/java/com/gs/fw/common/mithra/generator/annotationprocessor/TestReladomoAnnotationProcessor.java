@@ -5,6 +5,7 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.compiler.TestJavaCo
 import com.gs.fw.common.mithra.generator.annotationprocessor.processor.ReladomoAnnotationProcessor;
 import com.gs.fw.common.mithra.generator.util.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -46,12 +48,13 @@ public class TestReladomoAnnotationProcessor
     @After
     public void cleanup()
     {
-        //FileUtils.deleteDir(tempDir);
+        FileUtils.deleteDir(tempDir);
     }
 
     private StringFileObject addFileToUserSrcDir(String srcPath, String targetPath, String className) throws URISyntaxException, IOException
     {
         String resourceText = FileUtils.readFileAsString(loadFile(srcPath));
+        resourceText = resourceText.replaceAll("__NON_GENERATED_DIR__", userSrcDir.getAbsolutePath());
         File file = new File(userSrcDir, targetPath);
         FileUtils.createFile(resourceText, file);
         StringFileObject classListFileObject = new StringFileObject(className, resourceText);
@@ -65,8 +68,8 @@ public class TestReladomoAnnotationProcessor
                 "CustomerDomainListSpec", "ExampleGeneratorsSpec", "TimestampProvider"})
         {
             javaFileObjectList.add(addFileToUserSrcDir(
-                    "/annotations_set1/" +  name + ".java",
-                    "annotations_set1/" +  name + ".java",
+                    "/com/test1/specs/" +  name + ".java",
+                    "com/test1/specs/" +  name + ".java",
                     name)
             );
         }
@@ -88,5 +91,50 @@ public class TestReladomoAnnotationProcessor
         TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
         Boolean compilationStatus = compiler.compile();
         assertEquals(true, compilationStatus);
+
+        String[] files1 = getSortedFileNamesInDir(getUserSrcChildDir(userSrcDir, "com.test1.specs"));
+        Assert.assertArrayEquals("mismatch in spec sources",
+                new String[]{
+                        "CustomerAccountSpec.java", "CustomerDomainListSpec.java", "CustomerSpec.java",
+                        "ExampleGeneratorsSpec.java", "TimestampProvider.java"},
+                files1);
+
+        String[] files2 = getSortedFileNamesInDir(getUserSrcChildDir(userSrcDir, "com.test1.domain"));
+        Assert.assertArrayEquals("mismatch in generated sources",
+                new String[]{
+                        "Customer.java", "CustomerAccount.java", "CustomerAccountDatabaseObject.java",
+                        "CustomerAccountList.java", "CustomerDatabaseObject.java", "CustomerList.java"},
+                files2);
+
+        String[] files3 = getSortedFileNamesInDir(getUserSrcChildDir(targetGeneratedSrcDir, "com.test1.domain"));
+        Assert.assertArrayEquals("mismatch in generated sources",
+                new String[]{
+                        "CustomerAbstract.java", "CustomerAccountAbstract.java", "CustomerAccountData.java",
+                        "CustomerAccountDatabaseObjectAbstract.java", "CustomerAccountFinder.java", "CustomerAccountListAbstract.java",
+                        "CustomerData.java", "CustomerDatabaseObjectAbstract.java", "CustomerFinder.java", "CustomerListAbstract.java"},
+                files3);
+    }
+
+    private File getUserSrcChildDir(File userSrcDir, String packageName)
+    {
+        File dir = userSrcDir;
+        String[] tokens = packageName.split("\\.");
+        for (String token : tokens)
+        {
+            dir = new File(dir, token);
+        }
+        return dir;
+    }
+
+    private String[] getSortedFileNamesInDir(File dir)
+    {
+        File[] files = dir.listFiles();
+        List<String> fileNames =  new ArrayList<String>();
+        for (File file : files)
+        {
+            fileNames.add(file.getName());
+        }
+        Collections.sort(fileNames);
+        return fileNames.toArray(new String[]{});
     }
 }

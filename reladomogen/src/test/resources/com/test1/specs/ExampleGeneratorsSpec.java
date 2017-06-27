@@ -1,4 +1,4 @@
-package annotations_set1;
+package com.test1.specs;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorsSpec;
@@ -7,7 +7,7 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Reladom
         generators = {
                 @ReladomoGeneratorSpec(
                         domain = CustomerDomainListSpec.class,
-                        nonGeneratedDir =  "/tmp/foobar",
+                        nonGeneratedDir =  "__NON_GENERATED_DIR__",
                         generateConcreteClasses =  false,
                         generateGscListMethod =  true
                 )

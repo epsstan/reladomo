@@ -34,6 +34,8 @@ public class GeneratedFile extends CandidateFile
         byte[] srcBytes = readFile(srcPath);
         copyIfChanged(srcBytes, targetPath);
 
+        //srcPath.delete();
+
     }
 
     public void copyIfChanged(byte[] src, File outFile) throws IOException
