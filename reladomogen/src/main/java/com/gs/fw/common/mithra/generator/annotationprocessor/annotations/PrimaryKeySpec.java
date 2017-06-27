@@ -9,5 +9,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PrimaryKeySpec
 {
+    enum GeneratorStrategy
+    {
+        Max, SimulatedSequence
+    }
 
+    boolean mutable() default false;
+
+    GeneratorStrategy generatorStrategy() default GeneratorStrategy.SimulatedSequence;
 }

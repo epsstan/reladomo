@@ -24,6 +24,7 @@ public interface CustomerAccountSpec
             futureExpiringRowsExist = true)
     Timestamp processingDate();
 
+    @PrimaryKeySpec(generatorStrategy = PrimaryKeySpec.GeneratorStrategy.SimulatedSequence)
     @IntAttributeSpec(columnName = "ACCOUNT_ID")
     int accountId();
 

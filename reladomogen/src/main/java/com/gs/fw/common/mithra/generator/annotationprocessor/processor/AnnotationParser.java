@@ -635,7 +635,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-
     private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
     {
         ReladomoObjectSpec reladomoObjectSpec = reladomoObjectSpecDetails.reladomoObjectSpec;
@@ -650,22 +649,14 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         for (Element reladomoObjectSpecElement : reladomoObjectSpecDetails.enclosedElements)
         {
-            boolean primaryKey = isPrimaryKeyAttribute(reladomoObjectSpecElement);
             String name = reladomoObjectSpecElement.getSimpleName().toString();
-            AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
-            if (asOfAttributeSpec != null)
+            if (isAsOfAttribute(reladomoObjectSpecElement))
             {
-                asOfAttributeTypes.add(makeAsOfAttribute(asOfAttributeSpec, name));
+                addAsOfAttribute(reladomoObjectSpecElement, name, asOfAttributeTypes);
             }
-            StringAttributeSpec stringAttributeSpec  = reladomoObjectSpecElement.getAnnotation(StringAttributeSpec.class);
-            if (stringAttributeSpec != null)
+            else
             {
-                attributeTypes.add(makeStringAttribute(stringAttributeSpec, name, primaryKey));
-            }
-            IntAttributeSpec intAttributeSpec  = reladomoObjectSpecElement.getAnnotation(IntAttributeSpec.class);
-            if (intAttributeSpec != null)
-            {
-                attributeTypes.add(makeIntAttribute(intAttributeSpec, name, primaryKey));
+                addAttribute(reladomoObjectSpecElement, name, attributeTypes);
             }
         }
         mithraObject.setAsOfAttributes(asOfAttributeTypes);
@@ -673,48 +664,126 @@ public class AnnotationParser implements MithraObjectTypeParser
         return mithraObject;
     }
 
-    private boolean isPrimaryKeyAttribute(Element reladomoObjectSpecElement)
+    private boolean isAsOfAttribute(Element reladomoObjectSpecElement)
     {
-        PrimaryKeySpec primaryKeySpec = reladomoObjectSpecElement.getAnnotation(PrimaryKeySpec.class);
-        if (primaryKeySpec == null)
-        {
-            return false;
-        }
-        return true;
+        AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
+        return asOfAttributeSpec != null;
     }
 
-    private AttributeType makeStringAttribute(StringAttributeSpec spec, String name, boolean primaryKey)
+    private void addAsOfAttribute(Element reladomoObjectSpecElement, String name, List<AsOfAttributeType> asOfAttributeTypes)
+    {
+        AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
+        if (asOfAttributeSpec != null)
+        {
+            asOfAttributeTypes.add(makeAsOfAttribute(asOfAttributeSpec, name));
+        }
+    }
+
+    private void addAttribute(Element reladomoObjectSpecElement, String name, List<AttributeType> attributeTypes)
+    {
+        AttributeType attributeType = makeTypedAttribute(reladomoObjectSpecElement, name);
+        setPrimaryKeyStrategy(reladomoObjectSpecElement, attributeType);
+        attributeTypes.add(attributeType);
+    }
+
+    private AttributeType makeTypedAttribute(Element reladomoObjectSpecElement, String name)
+    {
+        StringAttributeSpec stringAttributeSpec  = reladomoObjectSpecElement.getAnnotation(StringAttributeSpec.class);
+        if (stringAttributeSpec != null)
+        {
+            return makeStringAttribute(stringAttributeSpec, name);
+        }
+        IntAttributeSpec intAttributeSpec  = reladomoObjectSpecElement.getAnnotation(IntAttributeSpec.class);
+        if (intAttributeSpec != null)
+        {
+            return makeIntAttribute(intAttributeSpec, name);
+        }
+        DoubleAttributeSpec doubleAttributeSpec = reladomoObjectSpecElement.getAnnotation(DoubleAttributeSpec.class);
+        if (doubleAttributeSpec != null)
+        {
+            return makeDoubleAttribute(doubleAttributeSpec, name);
+        }
+        throw new UnsupportedOperationException("unsupported attribute : " + name);
+    }
+
+    private AttributeType makeStringAttribute(StringAttributeSpec spec, String name)
     {
         AttributeType attributeType = new AttributeType();
+        //generic attributes
         attributeType.setName(name);
-        attributeType.setJavaType("String");
         attributeType.setColumnName(spec.columnName());
         attributeType.setReadonly(spec.readonly());
-        attributeType.setMaxLength(spec.maxLength());
-        attributeType.setTruncate(spec.truncate());
-        attributeType.setTrim(spec.trim());
         attributeType.setNullable(spec.nullable());
         attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
         attributeType.setFinalGetter(spec.finalGetter());
-        attributeType.setPrimaryKey(primaryKey);
+
+        //specific attributes
+        attributeType.setJavaType("String");
+        attributeType.setMaxLength(spec.maxLength());
+        attributeType.setTruncate(spec.truncate());
+        attributeType.setTrim(spec.trim());
+        attributeType.setPoolable(spec.poolable());
 
         //todo : is properties applicable ?
 
         return attributeType;
     }
 
-    private AttributeType makeIntAttribute(IntAttributeSpec spec, String name, boolean primaryKey)
+    private void setPrimaryKeyStrategy(Element reladomoObjectSpecElement, AttributeType attributeType)
+    {
+        PrimaryKeySpec primaryKeySpec = reladomoObjectSpecElement.getAnnotation(PrimaryKeySpec.class);
+        if (primaryKeySpec == null)
+        {
+            attributeType.setPrimaryKey(false);
+            return;
+        }
+        attributeType.setPrimaryKey(true);
+        attributeType.setMutablePrimaryKey(primaryKeySpec.mutable());
+        String strategyName = primaryKeySpec.generatorStrategy().name();
+        PrimaryKeyGeneratorStrategyType strategyType = new PrimaryKeyGeneratorStrategyType().with(strategyName, null);
+        attributeType.setPrimaryKeyGeneratorStrategy(strategyType);
+    }
+
+    private AttributeType makeIntAttribute(IntAttributeSpec spec, String name)
     {
         AttributeType attributeType = new AttributeType();
+        //generic attributes
         attributeType.setName(name);
-        attributeType.setJavaType("int");
         attributeType.setColumnName(spec.columnName());
         attributeType.setReadonly(spec.readonly());
         attributeType.setNullable(spec.nullable());
         attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
         attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+
+        //specific attributes
+        attributeType.setJavaType("int");
         attributeType.setUseForOptimisticLocking(spec.useForOptimisticLocking());
-        attributeType.setPrimaryKey(primaryKey);
+        attributeType.setPrecision(spec.precision());
+        attributeType.setScale(spec.scale());
+
+        //todo : is properties applicable ?
+        //todo : precision/scale
+
+        return attributeType;
+    }
+
+    private AttributeType makeDoubleAttribute(DoubleAttributeSpec spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+
+        //specific attributes
+        attributeType.setJavaType("double");
+        attributeType.setPrecision(spec.precision());
+        attributeType.setScale(spec.scale());
 
         //todo : is properties applicable ?
         //todo : precision/scale

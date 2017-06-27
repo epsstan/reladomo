@@ -9,7 +9,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DoubleAttributeSpec
 {
+    //generic attributes
     String columnName();
+    boolean nullable() default false;
+    String defaultIfNull() default "";
+    boolean readonly() default false;
+    boolean inPlaceUpdate() default false;
+    boolean finalGetter() default false;
 
-    boolean nullable() default true;
+    //specific attributes
+
+    int precision() default 0;
+    int scale() default 0;
+
 }

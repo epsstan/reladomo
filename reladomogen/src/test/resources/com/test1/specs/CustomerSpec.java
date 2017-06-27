@@ -24,7 +24,7 @@ public interface CustomerSpec
     )
     Timestamp processingDate();
 
-    @PrimaryKeySpec()
+    @PrimaryKeySpec(generatorStrategy = PrimaryKeySpec.GeneratorStrategy.SimulatedSequence)
     @IntAttributeSpec(columnName = "CUSTOMER_ID")
     int customerId();
 

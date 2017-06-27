@@ -9,17 +9,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntAttributeSpec
 {
+    //generic attributes
+
     String columnName();
-
     boolean nullable() default false;
-
+    String defaultIfNull() default "";
     boolean readonly() default false;
-
     boolean inPlaceUpdate() default false;
-
     boolean finalGetter() default false;
 
+    //specific attributes
     boolean useForOptimisticLocking() default false;
+    int precision() default 0;
+    int scale() default 0;
 
 // Todo
 //    primaryKey=" xsd:boolean [0..1] ?"
