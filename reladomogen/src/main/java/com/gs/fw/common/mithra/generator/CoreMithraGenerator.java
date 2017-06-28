@@ -572,6 +572,7 @@ public class CoreMithraGenerator extends BaseMithraGenerator
 
     public static void main(String[] args)
     {
+        /*
         MithraXMLObjectTypeParser parser = new MithraXMLObjectTypeParser("H:/projects/Mithra/xml/mithra/test/MithraClassList.xml");
         parser.setLogger(new StdOutLogger());
 
@@ -584,5 +585,19 @@ public class CoreMithraGenerator extends BaseMithraGenerator
         gen.setGenerateGscListMethod(true);
 
         gen.execute();
+        */
+        MithraXMLObjectTypeParser parser = new MithraXMLObjectTypeParser("/tmp/new-atp/xmls/SimpleBankClassList.xml");
+        parser.setLogger(new StdOutLogger());
+
+        CoreMithraGenerator gen = new CoreMithraGenerator();
+        gen.setMithraObjectTypeParser(parser);
+        gen.setLogger(new StdOutLogger());
+
+        gen.setGeneratedDir("/tmp/new-atp/abstract-src");
+        gen.setNonGeneratedDir("/tmp/new-atp/concrete-src");
+        gen.setGenerateGscListMethod(true);
+
+        gen.execute();
+
     }
 }

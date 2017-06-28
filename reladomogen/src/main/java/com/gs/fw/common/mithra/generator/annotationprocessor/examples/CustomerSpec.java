@@ -39,7 +39,7 @@ public interface CustomerSpec
 
     @RelationshipSpec(
         cardinality = RelationshipSpec.Cardinality.OneToMany,
-        contract = "this.customerId == CustomerAccount.customerId",
+        contract = "this.customerId = CustomerAccount.customerId",
         relatedIsDependent =  false,
         reverseRelationshipName = "customer"
 

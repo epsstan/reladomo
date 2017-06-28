@@ -109,9 +109,8 @@ public class TestReladomoAnnotationProcessor
         String[] files3 = getSortedFileNamesInDir(getUserSrcChildDir(targetGeneratedSrcDir, "com.test1.domain"));
         Assert.assertArrayEquals("mismatch in generated sources",
                 new String[]{
-                        "CustomerAbstract.java", "CustomerAccountAbstract.java", "CustomerAccountData.java",
-                        "CustomerAccountDatabaseObjectAbstract.java", "CustomerAccountFinder.java", "CustomerAccountListAbstract.java",
-                        "CustomerData.java", "CustomerDatabaseObjectAbstract.java", "CustomerFinder.java", "CustomerListAbstract.java"},
+                        "CustomerAbstract.java", "CustomerAccountAbstract.java",
+                        "CustomerAccountData.java", "CustomerAccountDatabaseObjectAbstract.java", "CustomerAccountFinder.java", "CustomerAccountListAbstract.java", "CustomerData.java", "CustomerDatabaseObjectAbstract.java", "CustomerFinder.java", "CustomerListAbstract.java"},
                 files3);
     }
 

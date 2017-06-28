@@ -4,6 +4,8 @@ import com.gs.fw.common.mithra.generator.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
@@ -635,6 +637,28 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
+    static class AttributesAndRelationships
+    {
+        final List<Element> attributes;
+        final List<Element> relationships;
+
+        public AttributesAndRelationships()
+        {
+            this.attributes = new ArrayList<Element>();
+            this.relationships = new ArrayList<Element>();
+        }
+
+        public void addAttribute(Element element)
+        {
+            this.attributes.add(element);
+        }
+
+        public void addRelationship(Element element)
+        {
+            this.relationships.add(element);
+        }
+    }
+
     private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
     {
         ReladomoObjectSpec reladomoObjectSpec = reladomoObjectSpecDetails.reladomoObjectSpec;
@@ -646,22 +670,70 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
+        List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
 
-        for (Element reladomoObjectSpecElement : reladomoObjectSpecDetails.enclosedElements)
+        AttributesAndRelationships attributesAndRelationships = partitionElements(reladomoObjectSpecDetails.enclosedElements);
+        gatherAttributes(asOfAttributeTypes, attributeTypes, attributesAndRelationships.attributes);
+        gatherRelationships(relationshipTypes, attributesAndRelationships.relationships);
+
+        mithraObject.setAsOfAttributes(asOfAttributeTypes);
+        mithraObject.setAttributes(attributeTypes);
+        mithraObject.setRelationships(relationshipTypes);
+        return mithraObject;
+    }
+
+    private void gatherRelationships(List<RelationshipType> relationshipTypes, List<Element> elements)
+    {
+        for (Element element : elements)
         {
-            String name = reladomoObjectSpecElement.getSimpleName().toString();
-            if (isAsOfAttribute(reladomoObjectSpecElement))
+            String name = element.getSimpleName().toString();
+            relationshipTypes.add(makeRelationship(element, name));
+        }
+    }
+
+    private void gatherAttributes(List<AsOfAttributeType> asOfAttributeTypes, List<AttributeType> attributeTypes, List<Element> elements)
+    {
+        for (Element element : elements)
+        {
+            String name = element.getSimpleName().toString();
+            if (isAsOfAttribute(element))
             {
-                addAsOfAttribute(reladomoObjectSpecElement, name, asOfAttributeTypes);
+                addAsOfAttribute(element, name, asOfAttributeTypes);
             }
             else
             {
-                addAttribute(reladomoObjectSpecElement, name, attributeTypes);
+                addAttribute(element, name, attributeTypes);
             }
         }
-        mithraObject.setAsOfAttributes(asOfAttributeTypes);
-        mithraObject.setAttributes(attributeTypes);
-        return mithraObject;
+    }
+
+    private AttributesAndRelationships partitionElements(List<? extends Element> elements)
+    {
+        AttributesAndRelationships attributesAndRelationships = new AttributesAndRelationships();
+        for (Element element : elements)
+        {
+            if (isAttribute(element))
+            {
+                attributesAndRelationships.addAttribute(element);
+            }
+            else if (isRelationship(element))
+            {
+                attributesAndRelationships.addRelationship(element);
+            }
+        }
+        return attributesAndRelationships;
+    }
+
+    private boolean isAttribute(Element element)
+    {
+        //todo : is this always binary
+        return !isRelationship(element);
+    }
+
+    private boolean isRelationship(Element element)
+    {
+        RelationshipSpec spec = element.getAnnotation(RelationshipSpec.class);
+        return spec != null;
     }
 
     private boolean isAsOfAttribute(Element reladomoObjectSpecElement)
@@ -810,6 +882,40 @@ public class AnnotationParser implements MithraObjectTypeParser
         asOfAttributeType.setPoolable(spec.poolable());
         asOfAttributeType.setProperties(extractProperties(spec));
         return asOfAttributeType;
+    }
+
+    private RelationshipType makeRelationship(Element element, String name)
+    {
+        RelationshipSpec spec = element.getAnnotation(RelationshipSpec.class);
+        Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
+        String relatedObject = returnType.asElement().getSimpleName().toString().replaceAll("Spec", "");
+
+        RelationshipType relationshipType = new RelationshipType();
+        relationshipType.setName(name);
+        relationshipType.setRelatedIsDependent(spec.relatedIsDependent());
+        relationshipType.setCardinality(spec.cardinality().toType());
+        relationshipType.setRelatedObject(relatedObject);
+        relationshipType._setValue(spec.contract());
+        relationshipType.setForeignKey(spec.foreignKeyType().toType());
+        relationshipType.setDirectReference(spec.directReference());
+        relationshipType.setFinalGetter(spec.finalGetter());
+        if (!spec.reverseRelationshipName().trim().isEmpty())
+        {
+            relationshipType.setReverseRelationshipName(spec.reverseRelationshipName());
+        }
+        if (!spec.orderBy().trim().isEmpty())
+        {
+            relationshipType.setOrderBy(spec.orderBy());
+        }
+        if (!spec.parameters().isEmpty())
+        {
+            relationshipType.setParameters(spec.parameters());
+        }
+        if (!spec.returnType().isEmpty())
+        {
+            relationshipType.setReturnType(spec.returnType());
+        }
+        return relationshipType;
     }
 
     private List<PropertyType> extractProperties(AsOfAttributeSpec spec)
