@@ -7,20 +7,19 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface StringAttributeSpec
+public @interface DoubleAttribute
 {
     //generic attributes
-
     String columnName();
     boolean nullable() default false;
+    String defaultIfNull() default "";
     boolean readonly() default false;
     boolean inPlaceUpdate() default false;
     boolean finalGetter() default false;
 
     //specific attributes
 
-    int maxLength() default 100;
-    boolean truncate() default false;
-    boolean trim() default true;
-    boolean poolable() default true;
+    int precision() default 0;
+    int scale() default 0;
+
 }

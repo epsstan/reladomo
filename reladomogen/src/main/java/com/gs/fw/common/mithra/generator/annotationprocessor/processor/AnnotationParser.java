@@ -2,6 +2,7 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.AsOfAttribute;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
 import com.sun.tools.javac.code.Symbol;
@@ -139,7 +140,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
         catch (MithraGeneratorParserException e)
         {
-            throw new MithraGeneratorException("Unable to parse "+ fileName, e);
+           throw new MithraGeneratorException("Unable to parse "+ fileName, e);
         }
         catch (IOException e)
         {
@@ -149,29 +150,29 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private int parseMithraObjects() throws FileNotFoundException
     {
-        final ObjectResourceSpec[] objectResourceSpecs = reladomoListSpec.resources();
+        final ObjectResource[] objectResources = reladomoListSpec.resources();
         chopAndStickResource.resetSerialResource();
-        for (int i = 0 ; i < objectResourceSpecs.length ; i++)
+        for (int i = 0; i < objectResources.length ; i++)
         {
-            final ObjectResourceSpec objectResourceSpec = objectResourceSpecs[i];
+            final ObjectResource objectResource = objectResources[i];
             getExecutor().submit(new GeneratorTask(i)
             {
                 public void run()
                 {
-                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = getReladomoObjectSpec(objectResourceSpec);
+                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = getReladomoObjectSpec(objectResource);
                     MithraObject mithraObject = processReladomoObject(reladomoObjectSpecDetails);
 
                     String name = reladomoObjectSpecDetails.name;
                     String objectFileName = reladomoObjectSpecDetails.specName;
 
-                    boolean isGenerateInterfaces = !objectResourceSpec.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResourceSpec.generateInterfaces();
-                    boolean enableOffHeap = !objectResourceSpec.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResourceSpec.enableOffHeap();
+                    boolean isGenerateInterfaces = !objectResource.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResource.generateInterfaces();
+                    boolean enableOffHeap = !objectResource.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResource.enableOffHeap();
                     MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, null, isGenerateInterfaces, ignorePackageNamingConvention, AnnotationParser.this.logger);
                     wrapper.setGenerateFileHeaders(generateFileHeaders);
-                    wrapper.setReplicated(objectResourceSpec.replicated());
+                    wrapper.setReplicated(objectResource.replicated());
                     wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
                     wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
-                    wrapper.setReadOnlyInterfaces(objectResourceSpec.readOnlyInterfaces() ? objectResourceSpec.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
+                    wrapper.setReadOnlyInterfaces(objectResource.readOnlyInterfaces() ? objectResource.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
                     wrapper.setDefaultFinalGetters(defaultFinalGetters);
                     wrapper.setEnableOffHeap(enableOffHeap);
                     mithraObjects.put(name, wrapper);
@@ -180,7 +181,7 @@ public class AnnotationParser implements MithraObjectTypeParser
             });
         }
         waitForExecutorWithCheck();
-        return objectResourceSpecs.length;
+        return objectResources.length;
     }
 
     private int parseMithraPureObjects()
@@ -599,25 +600,25 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     static class ReladomoObjectSpecDetails
     {
-        private final ReladomoObjectSpec reladomoObjectSpec;
+        private final ReladomoObject reladomoObject;
         private final List<? extends Element> enclosedElements;
         private final String name;
         private final String specName;
 
-        public ReladomoObjectSpecDetails(String name, String specName, ReladomoObjectSpec reladomoObjectSpec, List<? extends Element> enclosedElements)
+        public ReladomoObjectSpecDetails(String name, String specName, ReladomoObject reladomoObject, List<? extends Element> enclosedElements)
         {
             this.name = name;
             this.specName = specName;
-            this.reladomoObjectSpec = reladomoObjectSpec;
+            this.reladomoObject = reladomoObject;
             this.enclosedElements = enclosedElements;
         }
     }
 
-    private ReladomoObjectSpecDetails getReladomoObjectSpec(ObjectResourceSpec objectResourceSpec)
+    private ReladomoObjectSpecDetails getReladomoObjectSpec(ObjectResource objectResource)
     {
         try
         {
-            objectResourceSpec.name();
+            objectResource.name();
             throw new RuntimeException("Failed to get type mirror exception");
         }
         catch (MirroredTypeException e1)
@@ -632,7 +633,7 @@ public class AnnotationParser implements MithraObjectTypeParser
             return new ReladomoObjectSpecDetails(
                     specName.replaceAll("Spec", ""),
                     specName,
-                    objectSpecElement.getAnnotation(ReladomoObjectSpec.class),
+                    objectSpecElement.getAnnotation(ReladomoObject.class),
                     objectSpecElement.getEnclosedElements());
         }
     }
@@ -661,12 +662,12 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
     {
-        ReladomoObjectSpec reladomoObjectSpec = reladomoObjectSpecDetails.reladomoObjectSpec;
+        ReladomoObject reladomoObject = reladomoObjectSpecDetails.reladomoObject;
 
         MithraObject mithraObject = new MithraObject();
-        mithraObject.setPackageName(reladomoObjectSpec.packageName());
+        mithraObject.setPackageName(reladomoObject.packageName());
         mithraObject.setClassName(reladomoObjectSpecDetails.name);
-        mithraObject.setDefaultTable(reladomoObjectSpec.defaultTableName());
+        mithraObject.setDefaultTable(reladomoObject.defaultTableName());
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
@@ -732,22 +733,22 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private boolean isRelationship(Element element)
     {
-        RelationshipSpec spec = element.getAnnotation(RelationshipSpec.class);
+        Relationship spec = element.getAnnotation(Relationship.class);
         return spec != null;
     }
 
     private boolean isAsOfAttribute(Element reladomoObjectSpecElement)
     {
-        AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
-        return asOfAttributeSpec != null;
+        AsOfAttribute asOfAttribute = reladomoObjectSpecElement.getAnnotation(AsOfAttribute.class);
+        return asOfAttribute != null;
     }
 
     private void addAsOfAttribute(Element reladomoObjectSpecElement, String name, List<AsOfAttributeType> asOfAttributeTypes)
     {
-        AsOfAttributeSpec asOfAttributeSpec = reladomoObjectSpecElement.getAnnotation(AsOfAttributeSpec.class);
-        if (asOfAttributeSpec != null)
+        AsOfAttribute asOfAttribute = reladomoObjectSpecElement.getAnnotation(AsOfAttribute.class);
+        if (asOfAttribute != null)
         {
-            asOfAttributeTypes.add(makeAsOfAttribute(asOfAttributeSpec, name));
+            asOfAttributeTypes.add(makeAsOfAttribute(asOfAttribute, name));
         }
     }
 
@@ -760,25 +761,25 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private AttributeType makeTypedAttribute(Element reladomoObjectSpecElement, String name)
     {
-        StringAttributeSpec stringAttributeSpec  = reladomoObjectSpecElement.getAnnotation(StringAttributeSpec.class);
-        if (stringAttributeSpec != null)
+        StringAttribute stringAttribute = reladomoObjectSpecElement.getAnnotation(StringAttribute.class);
+        if (stringAttribute != null)
         {
-            return makeStringAttribute(stringAttributeSpec, name);
+            return makeStringAttribute(stringAttribute, name);
         }
-        IntAttributeSpec intAttributeSpec  = reladomoObjectSpecElement.getAnnotation(IntAttributeSpec.class);
-        if (intAttributeSpec != null)
+        IntAttribute intAttribute = reladomoObjectSpecElement.getAnnotation(IntAttribute.class);
+        if (intAttribute != null)
         {
-            return makeIntAttribute(intAttributeSpec, name);
+            return makeIntAttribute(intAttribute, name);
         }
-        DoubleAttributeSpec doubleAttributeSpec = reladomoObjectSpecElement.getAnnotation(DoubleAttributeSpec.class);
-        if (doubleAttributeSpec != null)
+        DoubleAttribute doubleAttribute = reladomoObjectSpecElement.getAnnotation(DoubleAttribute.class);
+        if (doubleAttribute != null)
         {
-            return makeDoubleAttribute(doubleAttributeSpec, name);
+            return makeDoubleAttribute(doubleAttribute, name);
         }
         throw new UnsupportedOperationException("unsupported attribute : " + name);
     }
 
-    private AttributeType makeStringAttribute(StringAttributeSpec spec, String name)
+    private AttributeType makeStringAttribute(StringAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -803,20 +804,20 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private void setPrimaryKeyStrategy(Element reladomoObjectSpecElement, AttributeType attributeType)
     {
-        PrimaryKeySpec primaryKeySpec = reladomoObjectSpecElement.getAnnotation(PrimaryKeySpec.class);
-        if (primaryKeySpec == null)
+        PrimaryKey primaryKey = reladomoObjectSpecElement.getAnnotation(PrimaryKey.class);
+        if (primaryKey == null)
         {
             attributeType.setPrimaryKey(false);
             return;
         }
         attributeType.setPrimaryKey(true);
-        attributeType.setMutablePrimaryKey(primaryKeySpec.mutable());
-        String strategyName = primaryKeySpec.generatorStrategy().name();
+        attributeType.setMutablePrimaryKey(primaryKey.mutable());
+        String strategyName = primaryKey.generatorStrategy().name();
         PrimaryKeyGeneratorStrategyType strategyType = new PrimaryKeyGeneratorStrategyType().with(strategyName, null);
         attributeType.setPrimaryKeyGeneratorStrategy(strategyType);
     }
 
-    private AttributeType makeIntAttribute(IntAttributeSpec spec, String name)
+    private AttributeType makeIntAttribute(IntAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -840,7 +841,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeDoubleAttribute(DoubleAttributeSpec spec, String name)
+    private AttributeType makeDoubleAttribute(DoubleAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -863,7 +864,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AsOfAttributeType makeAsOfAttribute(AsOfAttributeSpec spec, String name)
+    private AsOfAttributeType makeAsOfAttribute(AsOfAttribute spec, String name)
     {
         AsOfAttributeType asOfAttributeType = new AsOfAttributeType();
         asOfAttributeType.setName(name);
@@ -886,7 +887,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private RelationshipType makeRelationship(Element element, String name)
     {
-        RelationshipSpec spec = element.getAnnotation(RelationshipSpec.class);
+        Relationship spec = element.getAnnotation(Relationship.class);
         Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
         String relatedObject = returnType.asElement().getSimpleName().toString().replaceAll("Spec", "");
 
@@ -918,7 +919,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return relationshipType;
     }
 
-    private List<PropertyType> extractProperties(AsOfAttributeSpec spec)
+    private List<PropertyType> extractProperties(AsOfAttribute spec)
     {
         List<PropertyType> propertyTypes = new ArrayList<PropertyType>();
         for (PropertySpec propertySpec : spec.properties())

@@ -5,16 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PrimaryKeySpec
+public @interface ReladomoObject
 {
-    enum GeneratorStrategy
-    {
-        Max, SimulatedSequence
-    }
+    // class name is inferred from the class to which this annotation is applied
 
-    boolean mutable() default false;
+    String packageName();
 
-    GeneratorStrategy generatorStrategy() default GeneratorStrategy.SimulatedSequence;
+    String defaultTableName();
 }

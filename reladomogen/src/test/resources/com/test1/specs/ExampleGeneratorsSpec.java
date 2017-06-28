@@ -1,7 +1,6 @@
 package com.test1.specs;
 
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorSpec;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorsSpec;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 
 @ReladomoGeneratorsSpec(
         generators = {

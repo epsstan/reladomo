@@ -5,13 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ReladomoObjectSpec
+public @interface SourceAttribute
 {
-    // class name is inferred from the class to which this annotation is applied
-
-    String packageName();
-
-    String defaultTableName();
+    boolean finalGetter();
 }

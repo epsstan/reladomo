@@ -4,6 +4,9 @@ import com.gs.fw.common.mithra.generator.MithraGenerator;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorsSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeTranslator;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -31,6 +34,7 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
     private Filer filer;
     private Messager messager;
     private ArrayList<GeneratedFile> filesToCleanup;
+    private Trees trees;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv)
@@ -41,6 +45,7 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         this.filer = processingEnv.getFiler();
         this.messager = processingEnv.getMessager();
         this.filesToCleanup = new ArrayList<GeneratedFile>();
+        this.trees = Trees.instance(processingEnv);
     }
 
     @Override
@@ -108,8 +113,19 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         }
     }
 
+    static class ElementTreeTranslator extends TreeTranslator
+    {
+        @Override
+        public void visitAnnotation(JCTree.JCAnnotation jcAnnotation)
+        {
+            com.sun.tools.javac.util.List<JCTree.JCExpression> args = jcAnnotation.args;
+            System.out.println(1);
+        }
+    }
+
     private void processGeneratorsSpec(Element element) throws IOException
     {
+        //((JCTree)trees.getTree(element)).accept(new ElementTreeTranslator());
         ReladomoGeneratorsSpec generatorsSpec = element.getAnnotation(ReladomoGeneratorsSpec.class);
         ReladomoGeneratorSpec[] generators = generatorsSpec.generators();
         if (generators == null || generators.length == 0)

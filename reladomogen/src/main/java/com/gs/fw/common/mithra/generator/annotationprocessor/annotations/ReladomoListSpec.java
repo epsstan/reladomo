@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReladomoListSpec
 {
-    ObjectResourceSpec[] resources();
+    ObjectResource[] resources();
 
     boolean generateInterfaces() default false;
 
