@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IntAttribute
+public @interface LongAttribute
 {
     //generic attributes
 
@@ -20,16 +20,4 @@ public @interface IntAttribute
 
     //specific attributes
     boolean useForOptimisticLocking() default false;
-
-// Todo
-//    primaryKey=" xsd:boolean [0..1] ?"
-//    identity=" xsd:boolean [0..1] ?"
-//    primaryKeyGeneratorStrategy=" PrimaryKeyGeneratorStrategyType [0..1] ?"
-//    defaultIfNull=" xsd:token [0..1] ?"
-//    mutablePrimaryKey=" xsd:boolean [0..1] ?"
-//    modifyTimePrecisionOnSet=" TimePrecisionType [0..1] ?"
-//    precision=" xsd:int [0..1] ?"
-//    scale=" xsd:int [0..1] ?"
-//    <SimulatedSequence> SimulatedSequenceType </SimulatedSequence> [0..1] ?
-//    <Property> PropertyType </Property> [0..*] ?
 }

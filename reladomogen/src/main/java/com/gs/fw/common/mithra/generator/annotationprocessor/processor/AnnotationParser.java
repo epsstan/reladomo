@@ -1,8 +1,8 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.AsOfAttribute;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
 import com.sun.tools.javac.code.Symbol;
@@ -11,6 +11,7 @@ import com.sun.tools.javac.code.Type;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,13 +55,15 @@ public class AnnotationParser implements MithraObjectTypeParser
     private Logger logger;
 
     private Types typeUtils;
+    private Elements elementUtils;
     private ReladomoListSpec reladomoListSpec;
 
-    public AnnotationParser(Types typeUtils, ReladomoListSpec reladomoListSpec, File faleClassList)
+    public AnnotationParser(Types typeUtils, Elements elementUtils, ReladomoListSpec reladomoListSpec, File fakeClassList)
     {
         this.typeUtils = typeUtils;
+        this.elementUtils = elementUtils;
         this.reladomoListSpec = reladomoListSpec;
-        this.faleClassList = faleClassList;
+        this.faleClassList = fakeClassList;
     }
 
     public void setLogger(Logger logger)
@@ -771,10 +774,20 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             return makeIntAttribute(intAttribute, name);
         }
+        LongAttribute longAttribute = reladomoObjectSpecElement.getAnnotation(LongAttribute.class);
+        if (longAttribute != null)
+        {
+            return makeLongAttribute(longAttribute, name);
+        }
         DoubleAttribute doubleAttribute = reladomoObjectSpecElement.getAnnotation(DoubleAttribute.class);
         if (doubleAttribute != null)
         {
             return makeDoubleAttribute(doubleAttribute, name);
+        }
+        BigDecimalAttribute bigDecimalAttribute = reladomoObjectSpecElement.getAnnotation(BigDecimalAttribute.class);
+        if (bigDecimalAttribute != null)
+        {
+            return makeBigDecimalAttribute(bigDecimalAttribute, name);
         }
         throw new UnsupportedOperationException("unsupported attribute : " + name);
     }
@@ -832,15 +845,32 @@ public class AnnotationParser implements MithraObjectTypeParser
         //specific attributes
         attributeType.setJavaType("int");
         attributeType.setUseForOptimisticLocking(spec.useForOptimisticLocking());
-        attributeType.setPrecision(spec.precision());
-        attributeType.setScale(spec.scale());
 
         //todo : is properties applicable ?
-        //todo : precision/scale
-
         return attributeType;
     }
 
+    private AttributeType makeLongAttribute(LongAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+
+        //specific attributes
+        attributeType.setJavaType("long");
+        attributeType.setUseForOptimisticLocking(spec.useForOptimisticLocking());
+
+        //todo : is properties applicable ?
+        return attributeType;
+    }
+
+    //((AnnotationInvocationHandler) ((Proxy) spec).getInvocationHandler()).getMemberMethods()[0]
     private AttributeType makeDoubleAttribute(DoubleAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
@@ -855,12 +885,28 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         //specific attributes
         attributeType.setJavaType("double");
+
+        //todo : is properties applicable ?
+        return attributeType;
+    }
+
+    private AttributeType makeBigDecimalAttribute(BigDecimalAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+
+        //specific attributes
+        attributeType.setJavaType("BigDecimal");
         attributeType.setPrecision(spec.precision());
         attributeType.setScale(spec.scale());
 
         //todo : is properties applicable ?
-        //todo : precision/scale
-
         return attributeType;
     }
 

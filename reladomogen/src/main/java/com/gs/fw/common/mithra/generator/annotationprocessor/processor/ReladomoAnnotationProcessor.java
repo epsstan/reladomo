@@ -199,7 +199,8 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         String generatedDir = fakeClassList.getParentFile().getAbsolutePath();
         mithraGenerator.setGeneratedDir(generatedDir);
 
-        AnnotationParser annotationParser = new AnnotationParser(this.typeUtils, reladomoListSpecWithName.reladomoListSpec, fakeClassList);
+        AnnotationParser annotationParser = new AnnotationParser(this.typeUtils, this.elementUtils,
+                                                                reladomoListSpecWithName.reladomoListSpec, fakeClassList);
         mithraGenerator.setMithraObjectTypeParser(annotationParser);
 
         return mithraGenerator;

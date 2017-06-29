@@ -8,10 +8,6 @@ public enum TimezoneConversion
 
     public TimezoneConversionType toType()
     {
-        if (this == none)
-        {
-            return TimezoneConversionType.NONE;
-        }
-        throw new UnsupportedOperationException();
+        return TimezoneConversionType.NONE;
     }
 }

@@ -18,8 +18,4 @@ public @interface DoubleAttribute
     boolean finalGetter() default false;
 
     //specific attributes
-
-    int precision() default 0;
-    int scale() default 0;
-
 }

@@ -39,4 +39,7 @@ public interface CustomerAccountSpec
 
     @DoubleAttribute(columnName = "BALANCE", nullable = false)
     double balance();
+
+    @BigDecimalAttribute(columnName = "BIG_DECIMAL", nullable = false, precision=1, scale=1)
+    double bigDecimalAttribute();
 }
