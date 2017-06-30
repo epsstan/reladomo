@@ -764,10 +764,15 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private AttributeType makeTypedAttribute(Element reladomoObjectSpecElement, String name)
     {
-        StringAttribute stringAttribute = reladomoObjectSpecElement.getAnnotation(StringAttribute.class);
-        if (stringAttribute != null)
+        ByteAttribute byteAttribute = reladomoObjectSpecElement.getAnnotation(ByteAttribute.class);
+        if (byteAttribute != null)
         {
-            return makeStringAttribute(stringAttribute, name);
+            return makeByteAttribute(byteAttribute, name);
+        }
+        CharAttribute charAttribute = reladomoObjectSpecElement.getAnnotation(CharAttribute.class);
+        if (charAttribute != null)
+        {
+            return makeCharAttribute(charAttribute, name);
         }
         IntAttribute intAttribute = reladomoObjectSpecElement.getAnnotation(IntAttribute.class);
         if (intAttribute != null)
@@ -779,6 +784,11 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             return makeLongAttribute(longAttribute, name);
         }
+        FloatAttribute floatAttribute = reladomoObjectSpecElement.getAnnotation(FloatAttribute.class);
+        if (floatAttribute != null)
+        {
+            return makeFloatAttribute(floatAttribute, name);
+        }
         DoubleAttribute doubleAttribute = reladomoObjectSpecElement.getAnnotation(DoubleAttribute.class);
         if (doubleAttribute != null)
         {
@@ -789,7 +799,76 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             return makeBigDecimalAttribute(bigDecimalAttribute, name);
         }
+        StringAttribute stringAttribute = reladomoObjectSpecElement.getAnnotation(StringAttribute.class);
+        if (stringAttribute != null)
+        {
+            return makeStringAttribute(stringAttribute, name);
+        }
+        ByteArrayAttribute byteArrayAttribute = reladomoObjectSpecElement.getAnnotation(ByteArrayAttribute.class);
+        if (byteArrayAttribute != null)
+        {
+            return makeByteArrayAttribute(byteArrayAttribute, name);
+        }
         throw new UnsupportedOperationException("unsupported attribute : " + name);
+    }
+
+    private AttributeType makeCharAttribute(CharAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+
+        //specific attributes
+        attributeType.setJavaType("char");
+
+        //todo : is properties applicable ?
+
+        return attributeType;
+    }
+
+    private AttributeType makeByteAttribute(ByteAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+
+        //specific attributes
+        attributeType.setJavaType("byte");
+
+        //todo : is properties applicable ?
+
+        return attributeType;
+    }
+
+    private AttributeType makeByteArrayAttribute(ByteArrayAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+
+        //specific attributes
+        attributeType.setJavaType("byte[]");
+
+        //todo : is properties applicable ?
+
+        return attributeType;
     }
 
     private AttributeType makeStringAttribute(StringAttribute spec, String name)
@@ -885,6 +964,25 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         //specific attributes
         attributeType.setJavaType("double");
+
+        //todo : is properties applicable ?
+        return attributeType;
+    }
+
+    private AttributeType makeFloatAttribute(FloatAttribute spec, String name)
+    {
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+        attributeType.setColumnName(spec.columnName());
+        attributeType.setReadonly(spec.readonly());
+        attributeType.setNullable(spec.nullable());
+        attributeType.setInPlaceUpdate(spec.inPlaceUpdate());
+        attributeType.setFinalGetter(spec.finalGetter());
+        attributeType.setDefaultIfNull(spec.defaultIfNull());
+
+        //specific attributes
+        attributeType.setJavaType("float");
 
         //todo : is properties applicable ?
         return attributeType;

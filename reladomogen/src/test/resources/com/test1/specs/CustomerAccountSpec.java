@@ -42,4 +42,16 @@ public interface CustomerAccountSpec
 
     @BigDecimalAttribute(columnName = "BIG_DECIMAL", nullable = false, precision=1, scale=1)
     double bigDecimalAttribute();
+
+    @FloatAttribute(columnName = "FLOAT", nullable = false)
+    float floatAttribute();
+
+    @CharAttribute(columnName = "CHAR", nullable = false)
+    char charAttribute();
+
+    @ByteAttribute(columnName = "BYTE", nullable = false)
+    byte byteAttribute();
+
+    @ByteArrayAttribute(columnName = "BYTE_ARRAY", nullable = false)
+    char byteArrayAttribute();
 }
