@@ -19,7 +19,12 @@ public class GeneratedFile extends CandidateFile
 
     public File fullPath()
     {
-        return new File(fileUri);
+        String path = fileUri.getPath();
+        if (!path.startsWith("file://"))
+        {
+            path = "file://" + path;
+        }
+        return new File(URI.create(path));
     }
 
     public void relocateTo(File targetDir) throws IOException

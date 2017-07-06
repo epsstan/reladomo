@@ -15,8 +15,6 @@ public @interface ReladomoListSpec
     ObjectResource[] resources();
 
     boolean generateInterfaces() default false;
-
     boolean readOnlyInterfaces() default false;
-
     boolean enableOffHeap() default false;
 }

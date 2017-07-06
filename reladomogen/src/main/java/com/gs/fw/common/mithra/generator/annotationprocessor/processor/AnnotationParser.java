@@ -5,12 +5,11 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.AsOfAtt
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.File;
@@ -27,6 +26,7 @@ import static org.javacc.parser.JavaCCGlobals.fileName;
 public class AnnotationParser implements MithraObjectTypeParser
 {
     private final File faleClassList;
+    private final Trees trees;
     private CRC32 crc32 = new CRC32();
 
     private static final int IO_THREADS = 1;
@@ -56,14 +56,15 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private Types typeUtils;
     private Elements elementUtils;
-    private ReladomoListSpec reladomoListSpec;
+    private ReladomoListSpecWrapper reladomoListSpec;
 
-    public AnnotationParser(Types typeUtils, Elements elementUtils, ReladomoListSpec reladomoListSpec, File fakeClassList)
+    public AnnotationParser(Types typeUtils, Elements elementUtils, Trees trees, ReladomoListSpecWrapper reladomoListSpec, File fakeClassList)
     {
         this.typeUtils = typeUtils;
         this.elementUtils = elementUtils;
         this.reladomoListSpec = reladomoListSpec;
         this.faleClassList = fakeClassList;
+        this.trees = trees;
     }
 
     public void setLogger(Logger logger)
@@ -157,29 +158,30 @@ public class AnnotationParser implements MithraObjectTypeParser
         chopAndStickResource.resetSerialResource();
         for (int i = 0; i < objectResources.length ; i++)
         {
-            final ObjectResource objectResource = objectResources[i];
+            ObjectResource resource = objectResources[i];
+            final ObjectResourceWrapper objectResource = new ObjectResourceWrapper(reladomoListSpec, resource,
+                    elementUtils, typeUtils, trees);
             getExecutor().submit(new GeneratorTask(i)
             {
                 public void run()
                 {
-                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = getReladomoObjectSpec(objectResource);
+                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = objectResource.getReladomoObjectSpecDetails();
                     MithraObject mithraObject = processReladomoObject(reladomoObjectSpecDetails);
 
-                    String name = reladomoObjectSpecDetails.name;
-                    String objectFileName = reladomoObjectSpecDetails.specName;
+                    String name = reladomoObjectSpecDetails.getName();
+                    String objectFileName = reladomoObjectSpecDetails.getSpecName();
 
-                    boolean isGenerateInterfaces = !objectResource.generateInterfaces() ? reladomoListSpec.generateInterfaces() : objectResource.generateInterfaces();
-                    boolean enableOffHeap = !objectResource.enableOffHeap() ? reladomoListSpec.enableOffHeap() || forceOffHeap : objectResource.enableOffHeap();
+                    boolean isGenerateInterfaces = !objectResource.isGenerateInterfacesSet() ? reladomoListSpec.isGenerateInterfacesSet() : objectResource.generateInterfaces();
+                    boolean enableOffHeap = !objectResource.isEnableOffHeapSet() ? reladomoListSpec.isEnableOffHeapSet() || forceOffHeap : objectResource.enableOffHeap();
                     MithraObjectTypeWrapper wrapper = new MithraObjectTypeWrapper(mithraObject, objectFileName, null, isGenerateInterfaces, ignorePackageNamingConvention, AnnotationParser.this.logger);
                     wrapper.setGenerateFileHeaders(generateFileHeaders);
                     wrapper.setReplicated(objectResource.replicated());
                     wrapper.setIgnoreNonGeneratedAbstractClasses(ignoreNonGeneratedAbstractClasses);
                     wrapper.setIgnoreTransactionalMethods(ignoreTransactionalMethods);
-                    wrapper.setReadOnlyInterfaces(objectResource.readOnlyInterfaces() ? objectResource.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
+                    wrapper.setReadOnlyInterfaces(objectResource.isReadOnlyInterfacesSet() ? objectResource.readOnlyInterfaces() : reladomoListSpec.readOnlyInterfaces());
                     wrapper.setDefaultFinalGetters(defaultFinalGetters);
                     wrapper.setEnableOffHeap(enableOffHeap);
                     mithraObjects.put(name, wrapper);
-
                 }
             });
         }
@@ -601,46 +603,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         return result;
     }
 
-    static class ReladomoObjectSpecDetails
-    {
-        private final ReladomoObject reladomoObject;
-        private final List<? extends Element> enclosedElements;
-        private final String name;
-        private final String specName;
-
-        public ReladomoObjectSpecDetails(String name, String specName, ReladomoObject reladomoObject, List<? extends Element> enclosedElements)
-        {
-            this.name = name;
-            this.specName = specName;
-            this.reladomoObject = reladomoObject;
-            this.enclosedElements = enclosedElements;
-        }
-    }
-
-    private ReladomoObjectSpecDetails getReladomoObjectSpec(ObjectResource objectResource)
-    {
-        try
-        {
-            objectResource.name();
-            throw new RuntimeException("Failed to get type mirror exception");
-        }
-        catch (MirroredTypeException e1)
-        {
-            DeclaredType declaredType = (DeclaredType) e1.getTypeMirror();
-            Element objectSpecElement = typeUtils.asElement(declaredType);
-            String specName = objectSpecElement.getSimpleName().toString();
-            if (!specName.endsWith("Spec"))
-            {
-                throw new IllegalArgumentException("ReladmoObjectSpec class name as to end with 'Spec'. Found name " + specName);
-            }
-            return new ReladomoObjectSpecDetails(
-                    specName.replaceAll("Spec", ""),
-                    specName,
-                    objectSpecElement.getAnnotation(ReladomoObject.class),
-                    objectSpecElement.getEnclosedElements());
-        }
-    }
-
     static class AttributesAndRelationships
     {
         final List<Element> attributes;
@@ -665,18 +627,18 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
     {
-        ReladomoObject reladomoObject = reladomoObjectSpecDetails.reladomoObject;
+        ReladomoObject reladomoObject = reladomoObjectSpecDetails.getReladomoObject();
 
         MithraObject mithraObject = new MithraObject();
         mithraObject.setPackageName(reladomoObject.packageName());
-        mithraObject.setClassName(reladomoObjectSpecDetails.name);
+        mithraObject.setClassName(reladomoObjectSpecDetails.getName());
         mithraObject.setDefaultTable(reladomoObject.defaultTableName());
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
         List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
 
-        AttributesAndRelationships attributesAndRelationships = partitionElements(reladomoObjectSpecDetails.enclosedElements);
+        AttributesAndRelationships attributesAndRelationships = partitionElements(reladomoObjectSpecDetails.getEnclosedElements());
         gatherAttributes(asOfAttributeTypes, attributeTypes, attributesAndRelationships.attributes);
         gatherRelationships(relationshipTypes, attributesAndRelationships.relationships);
 
@@ -758,8 +720,11 @@ public class AnnotationParser implements MithraObjectTypeParser
     private void addAttribute(Element reladomoObjectSpecElement, String name, List<AttributeType> attributeTypes)
     {
         AttributeType attributeType = makeTypedAttribute(reladomoObjectSpecElement, name);
-        setPrimaryKeyStrategy(reladomoObjectSpecElement, attributeType);
-        attributeTypes.add(attributeType);
+        if (attributeType != null)
+        {
+            setPrimaryKeyStrategy(reladomoObjectSpecElement, attributeType);
+            attributeTypes.add(attributeType);
+        }
     }
 
     private AttributeType makeTypedAttribute(Element reladomoObjectSpecElement, String name)
@@ -809,7 +774,8 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             return makeByteArrayAttribute(byteArrayAttribute, name);
         }
-        throw new UnsupportedOperationException("unsupported attribute : " + name);
+        return null;
+        //throw new UnsupportedOperationException("unsupported attribute : " + name);
     }
 
     private AttributeType makeCharAttribute(CharAttribute spec, String name)

@@ -5,8 +5,9 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Reladom
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoGeneratorsSpec;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeTranslator;
+import com.sun.tools.javac.tree.TreeScanner;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -22,6 +23,7 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +47,9 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         this.filer = processingEnv.getFiler();
         this.messager = processingEnv.getMessager();
         this.filesToCleanup = new ArrayList<GeneratedFile>();
-        this.trees = Trees.instance(processingEnv);
+
+        JavacProcessingEnvironment javacProcessingEnvironment = (JavacProcessingEnvironment)processingEnv;
+        this.trees = Trees.instance(javacProcessingEnvironment);
     }
 
     @Override
@@ -97,13 +101,13 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
                 messager.printMessage(Diagnostic.Kind.ERROR, "Expected 1 but found " + annotatedElements.size() + " generator specs in the classpath");
                 return;
             }
-            Element generatorsSpec = annotatedElements.iterator().next();
-            if (generatorsSpec.getKind() != ElementKind.INTERFACE)
+            Element generatorSpecElement = annotatedElements.iterator().next();
+            if (generatorSpecElement.getKind() != ElementKind.INTERFACE)
             {
                 messager.printMessage(Diagnostic.Kind.ERROR, ReladomoGeneratorsSpec.class.getSimpleName() + " annotation can be applied to interfaces only");
                 return;
             }
-            processGeneratorsSpec(generatorsSpec);
+            processGeneratorsSpec(generatorSpecElement);
         }
         catch (Throwable e)
         {
@@ -113,19 +117,8 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         }
     }
 
-    static class ElementTreeTranslator extends TreeTranslator
-    {
-        @Override
-        public void visitAnnotation(JCTree.JCAnnotation jcAnnotation)
-        {
-            com.sun.tools.javac.util.List<JCTree.JCExpression> args = jcAnnotation.args;
-            System.out.println(1);
-        }
-    }
-
     private void processGeneratorsSpec(Element element) throws IOException
     {
-        //((JCTree)trees.getTree(element)).accept(new ElementTreeTranslator());
         ReladomoGeneratorsSpec generatorsSpec = element.getAnnotation(ReladomoGeneratorsSpec.class);
         ReladomoGeneratorSpec[] generators = generatorsSpec.generators();
         if (generators == null || generators.length == 0)
@@ -139,19 +132,7 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         }
     }
 
-    static class ReladomoListSpecWithName
-    {
-        ReladomoListSpec reladomoListSpec;
-        String name;
-
-        public ReladomoListSpecWithName(ReladomoListSpec reladomoListSpec, String name)
-        {
-            this.reladomoListSpec = reladomoListSpec;
-            this.name = name;
-        }
-    }
-
-    private ReladomoListSpecWithName getReladomoListSpec(ReladomoGeneratorSpec generatorSpec)
+    private ReladomoListSpecWrapper getReladomoListSpec(ReladomoGeneratorSpec generatorSpec)
     {
         try
         {
@@ -161,10 +142,10 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         catch (MirroredTypeException e)
         {
             DeclaredType declaredType = (DeclaredType) e.getTypeMirror();
-            Element listSpecElement = typeUtils.asElement(declaredType);
-            return new ReladomoListSpecWithName(
-                    listSpecElement.getAnnotation(ReladomoListSpec.class),
-                    listSpecElement.getSimpleName().toString());
+            Element element = typeUtils.asElement(declaredType);
+            ReladomoListSpec spec = element.getAnnotation(ReladomoListSpec.class);
+            return new ReladomoListSpecWrapper(spec, element, element.getSimpleName().toString(),
+                    elementUtils, typeUtils, trees);
         }
     }
 
@@ -192,15 +173,15 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
         mithraGenerator.setGenerateGscListMethod(generateGscListMethod);
         mithraGenerator.setNonGeneratedDir(nonGeneratedDir);
 
-        ReladomoListSpecWithName reladomoListSpecWithName = getReladomoListSpec(generatorSpec);
+        ReladomoListSpecWrapper reladomoListSpecWrapper = getReladomoListSpec(generatorSpec);
 
         // this is to keep the generator happy
-        File fakeClassList = createFakeClassList(reladomoListSpecWithName.name);
+        File fakeClassList = createFakeClassList(reladomoListSpecWrapper.getSpecName());
         String generatedDir = fakeClassList.getParentFile().getAbsolutePath();
         mithraGenerator.setGeneratedDir(generatedDir);
 
-        AnnotationParser annotationParser = new AnnotationParser(this.typeUtils, this.elementUtils,
-                                                                reladomoListSpecWithName.reladomoListSpec, fakeClassList);
+        AnnotationParser annotationParser = new AnnotationParser(this.typeUtils, this.elementUtils, this.trees,
+                                                                reladomoListSpecWrapper, fakeClassList);
         mithraGenerator.setMithraObjectTypeParser(annotationParser);
 
         return mithraGenerator;
@@ -247,6 +228,20 @@ public class ReladomoAnnotationProcessor extends AbstractProcessor
     private File createFakeClassList(String name) throws IOException
     {
         FileObject tempResource = filer.createResource(StandardLocation.SOURCE_OUTPUT, "", name);
-        return new File(tempResource.toUri());
+        String path = tempResource.toUri().getPath();
+        if (!path.startsWith("file://"))
+        {
+            path  = "file://" + path;
+        }
+        return new File(URI.create(path));
+    }
+
+    static class S extends TreeScanner
+    {
+        @Override
+        public void visitAssert(JCTree.JCAssert jcAssert)
+        {
+            System.out.println("");
+        }
     }
 }
