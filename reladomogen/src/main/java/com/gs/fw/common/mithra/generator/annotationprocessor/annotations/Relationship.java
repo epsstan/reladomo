@@ -1,6 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
 
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
+import com.gs.fw.common.mithra.generator.metamodel.ForeignKeyType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,46 +12,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Relationship
 {
-    enum Cardinality
-    {
-        OneToMany("one-to-many"), ManyToMany("many-to-many"), OneToOne("one-to-one"), ManyToOne("many-to-one");
-
-        private String value;
-
-        Cardinality(String value)
-        {
-            this.value = value;
-        }
-
-        public CardinalityType toType()
-        {
-            return new CardinalityType().with(value, null);
-        }
-    }
-
-    enum ForeignKeyType
-    {
-        auto("auto"), False("false");
-
-        private String value;
-
-        ForeignKeyType(String value)
-        {
-            this.value = value;
-        }
-
-        public com.gs.fw.common.mithra.generator.metamodel.ForeignKeyType toType()
-        {
-            return new com.gs.fw.common.mithra.generator.metamodel.ForeignKeyType().with(value, null);
-        }
-    }
-
     // this is the relationship expression
     String contract();
-    Cardinality cardinality();
+    CardinalityType.Enums cardinality();
     boolean relatedIsDependent() default false;
     String reverseRelationshipName() default "";
-    ForeignKeyType foreignKeyType() default ForeignKeyType.auto;
+
+    ForeignKeyType.Enums foreignKeyType() default ForeignKeyType.Enums.Auto;
     boolean directReference() default false;
     String orderBy() default "";
     String parameters() default "";

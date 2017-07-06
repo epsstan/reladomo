@@ -1,12 +1,16 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
+import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
+import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
 
 import java.sql.Timestamp;
 
 @ReladomoObject(
     packageName = "com.examples.reladomogen",
-    defaultTableName = "CUSTOMER"
+    defaultTableName = "CUSTOMER",
+    objectType = ObjectType.Enums.TRANSACTIONAL
 )
 public interface CustomerSpec
 {
@@ -24,7 +28,7 @@ public interface CustomerSpec
     )
     Timestamp processingDate();
 
-    @PrimaryKey(generatorStrategy = PrimaryKey.GeneratorStrategy.SimulatedSequence)
+    @PrimaryKey(generatorStrategy = PrimaryKeyGeneratorStrategyType.Enums.Max)
     @IntAttribute(columnName = "CUSTOMER_ID")
     int customerId();
 
@@ -38,7 +42,7 @@ public interface CustomerSpec
     String country();
 
     @Relationship(
-        cardinality = Relationship.Cardinality.OneToMany,
+        cardinality = CardinalityType.Enums.ONE_TO_MANY,
         contract = "this.customerId = CustomerAccount.customerId",
         relatedIsDependent =  false,
         reverseRelationshipName = "customer"

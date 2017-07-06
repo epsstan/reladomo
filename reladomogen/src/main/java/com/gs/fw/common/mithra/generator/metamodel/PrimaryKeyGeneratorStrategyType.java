@@ -20,4 +20,22 @@ public class PrimaryKeyGeneratorStrategyType
  extends PrimaryKeyGeneratorStrategyTypeAbstract
 
 {
+    public enum Enums
+    {
+        Max(new PrimaryKeyGeneratorStrategyType().with("Max", null)),
+        SimulatedSequence(new PrimaryKeyGeneratorStrategyType().with("SimulatedSequence", null));
+
+        private PrimaryKeyGeneratorStrategyType type;
+
+        Enums(PrimaryKeyGeneratorStrategyType type)
+        {
+            this.type = type;
+        }
+
+        public PrimaryKeyGeneratorStrategyType getType()
+        {
+            return type;
+        }
+    }
+
 }

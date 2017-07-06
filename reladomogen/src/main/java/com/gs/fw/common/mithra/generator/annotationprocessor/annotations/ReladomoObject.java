@@ -1,5 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
 
+import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -14,4 +16,7 @@ public @interface ReladomoObject
     String packageName();
 
     String defaultTableName();
+
+    ObjectType.Enums objectType() default ObjectType.Enums.READ_ONLY;
+
 }

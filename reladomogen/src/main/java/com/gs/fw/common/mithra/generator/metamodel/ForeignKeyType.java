@@ -21,4 +21,23 @@ public class ForeignKeyType
 
 {
     public static final ForeignKeyType FALSE = new ForeignKeyType().with("false", null);
+    public static final ForeignKeyType AUTO = new ForeignKeyType().with("auto", null);
+
+    public enum Enums
+    {
+        Auto(AUTO), False(FALSE);
+
+        private ForeignKeyType type;
+
+        Enums(ForeignKeyType type)
+        {
+
+            this.type = type;
+        }
+
+        public ForeignKeyType getType()
+        {
+            return type;
+        }
+    }
 }

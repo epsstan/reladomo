@@ -21,4 +21,22 @@ public class TimezoneConversionType
 
 {
     public static final TimezoneConversionType NONE = new TimezoneConversionType().with("none", null);
+
+    public enum Enums
+    {
+        none(NONE);
+
+        private TimezoneConversionType type;
+
+        Enums(TimezoneConversionType type)
+        {
+            this.type = type;
+        }
+
+        public TimezoneConversionType getType()
+        {
+            return type;
+        }
+    }
+
 }

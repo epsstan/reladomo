@@ -1,12 +1,16 @@
 package com.test1.specs;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
+import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
+import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
 
 import java.sql.Timestamp;
 
 @ReladomoObject(
     packageName = "com.test1.domain",
-    defaultTableName = "CUSTOMER_ACCOUNT"
+    defaultTableName = "CUSTOMER_ACCOUNT",
+    objectType = ObjectType.Enums.TRANSACTIONAL
 )
 public interface CustomerAccountSpec
 {
@@ -24,7 +28,7 @@ public interface CustomerAccountSpec
             futureExpiringRowsExist = true)
     Timestamp processingDate();
 
-    @PrimaryKey(generatorStrategy = PrimaryKey.GeneratorStrategy.SimulatedSequence)
+    @PrimaryKey(generatorStrategy = PrimaryKeyGeneratorStrategyType.Enums.Max)
     @IntAttribute(columnName = "ACCOUNT_ID")
     int accountId();
 

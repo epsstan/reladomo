@@ -1,5 +1,8 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
 
+import com.gs.fw.common.mithra.generator.metamodel.TimestampPrecisionType;
+import com.gs.fw.common.mithra.generator.metamodel.TimezoneConversionType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,9 +33,9 @@ public @interface AsOfAttribute
 
     boolean infinityIsNull() default false;
 
-    TimestampPrecision timestampPrecision() default TimestampPrecision.nanonsecond;
+    TimestampPrecisionType.Enums timestampPrecision() default TimestampPrecisionType.Enums.nanonsecond;
 
-    TimezoneConversion timezoneConversion() default TimezoneConversion.none;
+    TimezoneConversionType.Enums timezoneConversion() default TimezoneConversionType.Enums.none;
 
     boolean poolable() default true;
 

@@ -23,6 +23,25 @@ public class TimestampPrecisionType extends TimestampPrecisionTypeAbstract
     public static final TimestampPrecisionType MILLISECOND_PRECISION = new TimestampPrecisionType().with("millisecond", null);
     public static final TimestampPrecisionType NANOSECOND_PRECISION = new TimestampPrecisionType().with("nanosecond", null);
 
+    public enum Enums
+    {
+        nanonsecond(MILLISECOND_PRECISION),
+        millisecond(NANOSECOND_PRECISION);
+
+        private TimestampPrecisionType type;
+
+        Enums(TimestampPrecisionType type)
+        {
+            this.type = type;
+        }
+
+        public TimestampPrecisionType getType()
+        {
+            return type;
+        }
+    }
+
+
     public String asByte()
     {
         if (this.isMillisecond())

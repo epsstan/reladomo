@@ -20,4 +20,23 @@ public class CardinalityType
  extends CardinalityTypeAbstract
 
 {
+    public enum Enums
+    {
+        ONE_TO_MANY(new CardinalityType().with("one-to-many", null)),
+        MANY_TO_MANY(new CardinalityType().with("many-to-many", null)),
+        ONE_TO_ONE(new CardinalityType().with("one-to-one", null)),
+        MANY_TO_ONE(new CardinalityType().with("many-to-one", null));
+
+        private CardinalityType type;
+
+        Enums(CardinalityType type)
+        {
+            this.type = type;
+        }
+
+        public CardinalityType getType()
+        {
+            return type;
+        }
+    }
 }

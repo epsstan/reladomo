@@ -21,5 +21,25 @@ public class ObjectType
 
 {
     public static final ObjectType TRANSACTIONAL = new ObjectType().with("transactional", null);
+    public static final ObjectType READ_ONLY = new ObjectType().with("read-only", null);
+
+    public enum Enums
+    {
+        TRANSACTIONAL(ObjectType.TRANSACTIONAL),
+        READ_ONLY(ObjectType.READ_ONLY);
+
+        private ObjectType type;
+
+        Enums(ObjectType type)
+        {
+
+            this.type = type;
+        }
+
+        public ObjectType getType()
+        {
+            return type;
+        }
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
 
 import java.sql.Timestamp;
 
@@ -24,7 +25,7 @@ public interface CustomerAccountSpec
             futureExpiringRowsExist = true)
     Timestamp processingDate();
 
-    @PrimaryKey(generatorStrategy = PrimaryKey.GeneratorStrategy.SimulatedSequence)
+    @PrimaryKey(generatorStrategy = PrimaryKeyGeneratorStrategyType.Enums.Max)
     @IntAttribute(columnName = "ACCOUNT_ID")
     int accountId();
 

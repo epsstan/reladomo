@@ -641,6 +641,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         mithraObject.setPackageName(reladomoObject.packageName());
         mithraObject.setClassName(reladomoObjectSpecDetails.getName());
         mithraObject.setDefaultTable(reladomoObject.defaultTableName());
+        mithraObject.setObjectType(reladomoObject.objectType().getType());
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
@@ -907,9 +908,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
         attributeType.setPrimaryKey(true);
         attributeType.setMutablePrimaryKey(primaryKey.mutable());
-        String strategyName = primaryKey.generatorStrategy().name();
-        PrimaryKeyGeneratorStrategyType strategyType = new PrimaryKeyGeneratorStrategyType().with(strategyName, null);
-        attributeType.setPrimaryKeyGeneratorStrategy(strategyType);
+        attributeType.setPrimaryKeyGeneratorStrategy(primaryKey.generatorStrategy().getType());
     }
 
     private AttributeType makeIntAttribute(IntAttribute spec, String name)
@@ -1025,8 +1024,8 @@ public class AnnotationParser implements MithraObjectTypeParser
         asOfAttributeType.setInfinityIsNull(spec.infinityIsNull());
         asOfAttributeType.setIsProcessingDate(spec.isProcessingDate());
         asOfAttributeType.setToIsInclusive(spec.toIsInclusive());
-        asOfAttributeType.setTimezoneConversion(spec.timezoneConversion().toType());
-        asOfAttributeType.setTimestampPrecision(spec.timestampPrecision().toType());
+        asOfAttributeType.setTimezoneConversion(spec.timezoneConversion().getType());
+        asOfAttributeType.setTimestampPrecision(spec.timestampPrecision().getType());
         asOfAttributeType.setPoolable(spec.poolable());
         asOfAttributeType.setProperties(extractProperties(spec));
         return asOfAttributeType;
@@ -1041,10 +1040,10 @@ public class AnnotationParser implements MithraObjectTypeParser
         RelationshipType relationshipType = new RelationshipType();
         relationshipType.setName(name);
         relationshipType.setRelatedIsDependent(spec.relatedIsDependent());
-        relationshipType.setCardinality(spec.cardinality().toType());
+        relationshipType.setCardinality(spec.cardinality().getType());
         relationshipType.setRelatedObject(relatedObject);
         relationshipType._setValue(spec.contract());
-        relationshipType.setForeignKey(spec.foreignKeyType().toType());
+        relationshipType.setForeignKey(spec.foreignKeyType().getType());
         relationshipType.setDirectReference(spec.directReference());
         relationshipType.setFinalGetter(spec.finalGetter());
         if (!spec.reverseRelationshipName().trim().isEmpty())
