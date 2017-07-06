@@ -30,7 +30,7 @@ public class TestReladomoAnnotationProcessor
     @Before
     public void setup() throws IOException
     {
-        tempDir = new File("/tmp/" + System.currentTimeMillis());
+        tempDir = new File("/tmp/reladomogen-" + System.currentTimeMillis());
         tempDir.mkdirs();
 
         userSrcDir = new File(tempDir, "src/main/java");
@@ -48,7 +48,7 @@ public class TestReladomoAnnotationProcessor
     @After
     public void cleanup()
     {
-        FileUtils.deleteDir(tempDir);
+        //FileUtils.deleteDir(tempDir);
     }
 
     private StringFileObject addFileToUserSrcDir(String srcPath, String targetPath, String className) throws URISyntaxException, IOException

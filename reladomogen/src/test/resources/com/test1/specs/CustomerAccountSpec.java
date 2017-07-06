@@ -54,4 +54,7 @@ public interface CustomerAccountSpec
 
     @ByteArrayAttribute(columnName = "BYTE_ARRAY", nullable = false)
     char byteArrayAttribute();
+
+    @IntAttribute(columnName = "a", nullable = false)
+    int a();
 }

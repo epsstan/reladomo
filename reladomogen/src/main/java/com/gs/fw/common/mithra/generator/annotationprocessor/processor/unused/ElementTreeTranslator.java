@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
+package com.gs.fw.common.mithra.generator.annotationprocessor.processor.unused;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
 import com.sun.tools.javac.tree.JCTree;

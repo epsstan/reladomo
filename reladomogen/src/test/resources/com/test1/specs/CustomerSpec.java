@@ -45,4 +45,8 @@ public interface CustomerSpec
 
     )
     CustomerAccountSpec accounts();
+
+
+    @Index(unique=true, attributes="firstName, lastName")
+    void index1();
 }

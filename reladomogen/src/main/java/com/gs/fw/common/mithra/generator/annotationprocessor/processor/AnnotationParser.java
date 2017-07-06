@@ -3,6 +3,7 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 import com.gs.fw.common.mithra.generator.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.AsOfAttribute;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Index;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
 import com.sun.source.util.Trees;
@@ -603,15 +604,17 @@ public class AnnotationParser implements MithraObjectTypeParser
         return result;
     }
 
-    static class AttributesAndRelationships
+    static class ElementsByType
     {
         final List<Element> attributes;
         final List<Element> relationships;
+        final List<Element> indices;
 
-        public AttributesAndRelationships()
+        public ElementsByType()
         {
             this.attributes = new ArrayList<Element>();
             this.relationships = new ArrayList<Element>();
+            this.indices = new ArrayList<Element>();
         }
 
         public void addAttribute(Element element)
@@ -622,6 +625,11 @@ public class AnnotationParser implements MithraObjectTypeParser
         public void addRelationship(Element element)
         {
             this.relationships.add(element);
+        }
+
+        public void addIndex(Element element)
+        {
+            this.indices.add(element);
         }
     }
 
@@ -637,10 +645,13 @@ public class AnnotationParser implements MithraObjectTypeParser
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
         List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
+        List<IndexType> indexTypes = new ArrayList<IndexType>();
 
-        AttributesAndRelationships attributesAndRelationships = partitionElements(reladomoObjectSpecDetails.getEnclosedElements());
-        gatherAttributes(asOfAttributeTypes, attributeTypes, attributesAndRelationships.attributes);
-        gatherRelationships(relationshipTypes, attributesAndRelationships.relationships);
+        // todo : maybe convert this to use the visitor pattern ?
+        ElementsByType elementsByType = partitionElements(reladomoObjectSpecDetails.getEnclosedElements());
+        gatherAttributes(asOfAttributeTypes, attributeTypes, elementsByType.attributes);
+        gatherRelationships(relationshipTypes, elementsByType.relationships);
+        gatherIndices(indexTypes, elementsByType.indices);
 
         mithraObject.setAsOfAttributes(asOfAttributeTypes);
         mithraObject.setAttributes(attributeTypes);
@@ -654,6 +665,15 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             String name = element.getSimpleName().toString();
             relationshipTypes.add(makeRelationship(element, name));
+        }
+    }
+
+    private void gatherIndices(List<IndexType> indexTypes, List<Element> elements)
+    {
+        for (Element element : elements)
+        {
+            String name = element.getSimpleName().toString();
+            indexTypes.add(makeIndexType(element, name));
         }
     }
 
@@ -673,33 +693,50 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    private AttributesAndRelationships partitionElements(List<? extends Element> elements)
+    private ElementsByType partitionElements(List<? extends Element> elements)
     {
-        AttributesAndRelationships attributesAndRelationships = new AttributesAndRelationships();
+        ElementsByType elementsByType = new ElementsByType();
         for (Element element : elements)
         {
             if (isAttribute(element))
             {
-                attributesAndRelationships.addAttribute(element);
+                elementsByType.addAttribute(element);
             }
             else if (isRelationship(element))
             {
-                attributesAndRelationships.addRelationship(element);
+                elementsByType.addRelationship(element);
+            }
+            else if (isIndex(element))
+            {
+                elementsByType.addIndex(element);
             }
         }
-        return attributesAndRelationships;
+        return elementsByType;
     }
 
     private boolean isAttribute(Element element)
     {
-        //todo : is this always binary
-        return !isRelationship(element);
+        for (Class clazz : new Class[]{
+                BigDecimalAttribute.class, ByteArrayAttribute.class, ByteAttribute.class, CharAttribute.class,
+                DoubleAttribute.class, FloatAttribute.class, IntAttribute.class, LongAttribute.class,
+                StringAttribute.class})
+        {
+            if (element.getAnnotation(clazz) != null )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isRelationship(Element element)
     {
-        Relationship spec = element.getAnnotation(Relationship.class);
-        return spec != null;
+        return element.getAnnotation(Relationship.class) != null;
+    }
+
+    private boolean isIndex(Element element)
+    {
+        return element.getAnnotation(Index.class) != null;
     }
 
     private boolean isAsOfAttribute(Element reladomoObjectSpecElement)
@@ -1027,6 +1064,16 @@ public class AnnotationParser implements MithraObjectTypeParser
             relationshipType.setReturnType(spec.returnType());
         }
         return relationshipType;
+    }
+
+    private IndexType makeIndexType(Element element, String name)
+    {
+        Index spec = element.getAnnotation(Index.class);
+        IndexType indexType = new IndexType();
+        indexType.setName(name);
+        indexType.setUnique(spec.unique());
+        indexType._setValue(spec.attributes());
+        return indexType;
     }
 
     private List<PropertyType> extractProperties(AsOfAttribute spec)
