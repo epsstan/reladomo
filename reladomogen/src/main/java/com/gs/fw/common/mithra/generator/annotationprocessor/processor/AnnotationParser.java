@@ -4,6 +4,7 @@ import com.gs.fw.common.mithra.generator.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.AsOfAttribute;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Index;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.Properties;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
 import com.sun.source.util.Trees;
@@ -751,28 +752,41 @@ public class AnnotationParser implements MithraObjectTypeParser
         return element.getAnnotation(Index.class) != null;
     }
 
-    private boolean isAsOfAttribute(Element reladomoObjectSpecElement)
+    private boolean isAsOfAttribute(Element element)
     {
-        AsOfAttribute asOfAttribute = reladomoObjectSpecElement.getAnnotation(AsOfAttribute.class);
-        return asOfAttribute != null;
+        return element.getAnnotation(AsOfAttribute.class) != null;
     }
 
-    private void addAsOfAttribute(Element reladomoObjectSpecElement, String name, List<AsOfAttributeType> asOfAttributeTypes)
+    private void addAsOfAttribute(Element element, String name, List<AsOfAttributeType> asOfAttributeTypes)
     {
-        AsOfAttribute asOfAttribute = reladomoObjectSpecElement.getAnnotation(AsOfAttribute.class);
+        AsOfAttribute asOfAttribute = element.getAnnotation(AsOfAttribute.class);
         if (asOfAttribute != null)
         {
-            asOfAttributeTypes.add(makeAsOfAttribute(asOfAttribute, name));
+            AsOfAttributeType attributeType = makeAsOfAttribute(asOfAttribute, name);
+            asOfAttributeTypes.add(attributeType);
+            Properties properties = element.getAnnotation(Properties.class);
+            if (properties != null)
+            {
+                List<PropertyType> propertyTypes = extractProperties(properties);
+                attributeType.setProperties(propertyTypes);
+            }
         }
     }
 
-    private void addAttribute(Element reladomoObjectSpecElement, String name, List<AttributeType> attributeTypes)
+    private void addAttribute(Element element, String name, List<AttributeType> attributeTypes)
     {
-        AttributeType attributeType = makeTypedAttribute(reladomoObjectSpecElement, name);
+        AttributeType attributeType = makeTypedAttribute(element, name);
         if (attributeType != null)
         {
-            setPrimaryKeyStrategy(reladomoObjectSpecElement, attributeType);
+            setPrimaryKeyStrategy(element, attributeType);
             attributeTypes.add(attributeType);
+
+            Properties properties = element.getAnnotation(Properties.class);
+            if (properties != null)
+            {
+                List<PropertyType> propertyTypes = extractProperties(properties);
+                attributeType.setProperties(propertyTypes);
+            }
         }
     }
 
@@ -1038,7 +1052,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         asOfAttributeType.setTimezoneConversion(spec.timezoneConversion().getType());
         asOfAttributeType.setTimestampPrecision(spec.timestampPrecision().getType());
         asOfAttributeType.setPoolable(spec.poolable());
-        asOfAttributeType.setProperties(extractProperties(spec));
         return asOfAttributeType;
     }
 
@@ -1086,14 +1099,14 @@ public class AnnotationParser implements MithraObjectTypeParser
         return indexType;
     }
 
-    private List<PropertyType> extractProperties(AsOfAttribute spec)
+    private List<PropertyType> extractProperties(Properties spec)
     {
         List<PropertyType> propertyTypes = new ArrayList<PropertyType>();
-        for (PropertySpec propertySpec : spec.properties())
+        for (Property property : spec.value())
         {
             PropertyType propType = new PropertyType();
-            propType.setKey(propertySpec.key());
-            propType.setValue(propertySpec.value());
+            propType.setKey("\"" + property.key() + "\"");
+            propType.setValue("\"" + property.value() + "\"");
             propertyTypes.add(propType);
         }
         return propertyTypes;

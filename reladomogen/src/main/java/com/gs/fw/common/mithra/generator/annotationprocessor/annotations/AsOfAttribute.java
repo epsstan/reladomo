@@ -39,5 +39,5 @@ public @interface AsOfAttribute
 
     boolean poolable() default true;
 
-    PropertySpec[] properties() default {};
+    Property[] properties() default {};
 }

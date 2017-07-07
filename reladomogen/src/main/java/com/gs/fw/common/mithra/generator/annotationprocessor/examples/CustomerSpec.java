@@ -39,6 +39,11 @@ public interface CustomerSpec
     String lastName();
 
     @StringAttribute(columnName = "COUNTRY", maxLength = 200, nullable = true)
+    @Properties({
+            @Property(key = "a1", value = "b1"),
+            @Property(key = "a2", value = "b2"),
+            @Property(key = "a3", value = "b3"),
+    })
     String country();
 
     @Relationship(
