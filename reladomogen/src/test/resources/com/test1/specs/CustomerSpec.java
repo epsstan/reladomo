@@ -29,7 +29,8 @@ public interface CustomerSpec
     )
     Timestamp processingDate();
 
-    @PrimaryKey(generatorStrategy = PrimaryKeyGeneratorStrategyType.Enums.Max)
+    @PrimaryKey()
+    @MaxPKStrategy()
     @IntAttribute(columnName = "CUSTOMER_ID")
     int customerId();
 

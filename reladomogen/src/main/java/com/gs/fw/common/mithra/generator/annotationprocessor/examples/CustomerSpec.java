@@ -3,7 +3,6 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
 import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
-import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
 
 import java.sql.Timestamp;
 
@@ -28,7 +27,8 @@ public interface CustomerSpec
     )
     Timestamp processingDate();
 
-    @PrimaryKey(generatorStrategy = PrimaryKeyGeneratorStrategyType.Enums.Max)
+    @PrimaryKey()
+    @MaxPKStrategy()
     @IntAttribute(columnName = "CUSTOMER_ID")
     int customerId();
 

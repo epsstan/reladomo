@@ -776,7 +776,11 @@ public class AnnotationParser implements MithraObjectTypeParser
     private void addAttribute(Element element, String name, List<AttributeType> attributeTypes)
     {
         AttributeType attributeType = makeTypedAttribute(element, name);
-        if (attributeType != null)
+        if (attributeType == null)
+        {
+            // todo : generate validation error
+        }
+        else
         {
             setPrimaryKeyStrategy(element, attributeType);
             attributeTypes.add(attributeType);
@@ -838,7 +842,6 @@ public class AnnotationParser implements MithraObjectTypeParser
             return makeByteArrayAttribute(byteArrayAttribute, name);
         }
         return null;
-        //throw new UnsupportedOperationException("unsupported attribute : " + name);
     }
 
     private AttributeType makeCharAttribute(CharAttribute spec, String name)
@@ -855,8 +858,6 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         //specific attributes
         attributeType.setJavaType("char");
-
-        //todo : is properties applicable ?
 
         return attributeType;
     }
@@ -876,8 +877,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         //specific attributes
         attributeType.setJavaType("byte");
 
-        //todo : is properties applicable ?
-
         return attributeType;
     }
 
@@ -894,8 +893,6 @@ public class AnnotationParser implements MithraObjectTypeParser
 
         //specific attributes
         attributeType.setJavaType("byte[]");
-
-        //todo : is properties applicable ?
 
         return attributeType;
     }
@@ -918,14 +915,12 @@ public class AnnotationParser implements MithraObjectTypeParser
         attributeType.setTrim(spec.trim());
         attributeType.setPoolable(spec.poolable());
 
-        //todo : is properties applicable ?
-
         return attributeType;
     }
 
-    private void setPrimaryKeyStrategy(Element reladomoObjectSpecElement, AttributeType attributeType)
+    private void setPrimaryKeyStrategy(Element element, AttributeType attributeType)
     {
-        PrimaryKey primaryKey = reladomoObjectSpecElement.getAnnotation(PrimaryKey.class);
+        PrimaryKey primaryKey = element.getAnnotation(PrimaryKey.class);
         if (primaryKey == null)
         {
             attributeType.setPrimaryKey(false);
@@ -933,7 +928,37 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
         attributeType.setPrimaryKey(true);
         attributeType.setMutablePrimaryKey(primaryKey.mutable());
-        attributeType.setPrimaryKeyGeneratorStrategy(primaryKey.generatorStrategy().getType());
+        boolean strategyAdded = addPKStrategy(element, attributeType);
+        if (!strategyAdded)
+        {
+            //todo : generate validation error
+        }
+    }
+
+    private boolean addPKStrategy(Element element, AttributeType attributeType)
+    {
+        SimulatedSequencePKStrategy simulatedSequencePKStrategy = element.getAnnotation(SimulatedSequencePKStrategy.class);
+        if (simulatedSequencePKStrategy != null)
+        {
+            SimulatedSequenceType simulatedSequenceType = new SimulatedSequenceType();
+            simulatedSequenceType.setBatchSize(simulatedSequencePKStrategy.batchSize());
+            simulatedSequenceType.setInitialValue(simulatedSequencePKStrategy.intialValue());
+            simulatedSequenceType.setIncrementSize(simulatedSequencePKStrategy.incrementSize());
+            simulatedSequenceType.setSequenceName(simulatedSequencePKStrategy.sequenceName());
+            simulatedSequenceType.setSequenceObjectFactoryName(simulatedSequencePKStrategy.sequenceObjectFactoryName());
+            simulatedSequenceType.setHasSourceAttribute(simulatedSequencePKStrategy.hasSourceAttribute());
+
+            attributeType.setSimulatedSequence(simulatedSequenceType);
+            attributeType.setPrimaryKeyGeneratorStrategy(PrimaryKeyGeneratorStrategyType.SimulatedSequence);
+            return true;
+        }
+        MaxPKStrategy maxPKStrategy = element.getAnnotation(MaxPKStrategy.class);
+        if (maxPKStrategy != null)
+        {
+            attributeType.setPrimaryKeyGeneratorStrategy(PrimaryKeyGeneratorStrategyType.Max);
+            return true;
+        }
+        return false;
     }
 
     private AttributeType makeIntAttribute(IntAttribute spec, String name)

@@ -7,8 +7,17 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PrimaryKey
+public @interface SimulatedSequencePKStrategy
 {
-    boolean mutable() default false;
-}
+    String sequenceName();
 
+    String sequenceObjectFactoryName();
+
+    boolean hasSourceAttribute() default false;
+
+    int batchSize() default 10;
+
+    int intialValue() default 1;
+
+    int incrementSize() default 1;
+}
