@@ -5,6 +5,11 @@ import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyTy
 
 import java.sql.Timestamp;
 
+/*
+   @PrimaryKey
+   @PrimaryKeySimulatedSequenceStrategy(
+ */
+
 @ReladomoObject(
     packageName = "com.examples.reladomogen",
     defaultTableName = "CUSTOMER_ACCOUNT"

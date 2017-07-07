@@ -643,6 +643,17 @@ public class AnnotationParser implements MithraObjectTypeParser
         mithraObject.setDefaultTable(reladomoObject.defaultTableName());
         mithraObject.setObjectType(reladomoObject.objectType().getType());
 
+        //todo : validate that only one superclass can be specified
+        SuperClass[] superClasses = reladomoObject.superClass();
+        if (superClasses != null && superClasses.length == 1)
+        {
+            SuperClass superClass = superClasses[0];
+            SuperClassAttributeType superClassAttributeType = new SuperClassAttributeType();
+            superClassAttributeType.setName(superClass.name());
+            superClassAttributeType.setGenerated(superClass.generated());
+            mithraObject.setSuperClass(superClassAttributeType);
+        }
+
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
         List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();

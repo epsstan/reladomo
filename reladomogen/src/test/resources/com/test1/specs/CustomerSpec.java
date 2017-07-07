@@ -10,7 +10,8 @@ import java.sql.Timestamp;
 @ReladomoObject(
         packageName = "com.test1.domain",
         defaultTableName = "CUSTOMER",
-        objectType = ObjectType.Enums.TRANSACTIONAL
+        objectType = ObjectType.Enums.TRANSACTIONAL,
+        superClass = @SuperClass(name="com.test1.specs.CustomerSuperClass", generated=false)
 )
 public interface CustomerSpec
 {

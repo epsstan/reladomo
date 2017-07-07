@@ -19,4 +19,6 @@ public @interface ReladomoObject
 
     ObjectType.Enums objectType() default ObjectType.Enums.READ_ONLY;
 
+    SuperClass[] superClass() default {};
+
 }
