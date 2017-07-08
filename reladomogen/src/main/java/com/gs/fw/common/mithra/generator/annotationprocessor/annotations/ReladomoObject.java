@@ -21,4 +21,8 @@ public @interface ReladomoObject
 
     SuperClass[] superClass() default {};
 
+    Class[] updateListenerClass() default {};
+
+    Class[] datedTransactionalTemporalDirector() default {};
+
 }

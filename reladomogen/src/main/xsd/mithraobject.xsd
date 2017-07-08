@@ -73,7 +73,7 @@
             <xsd:element name="DatedTransactionalTemporalDirector" type="xsd:token" minOccurs="0">
                 <xsd:annotation><xsd:documentation xml:lang="en">
                         For dated objects only: overrides the default TemporalDirector implementation.
-                        Usually a subclass of GenericBiTemporalDirector, GenericNonAuditedTemporalDirector or AuditOnlyTemporalDirector
+R                        Usually a subclass of GenericBiTemporalDirector, GenericNonAuditedTemporalDirector or AuditOnlyTemporalDirector
                 </xsd:documentation></xsd:annotation>
             </xsd:element>
         </xsd:sequence>

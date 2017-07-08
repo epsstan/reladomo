@@ -644,16 +644,9 @@ public class AnnotationParser implements MithraObjectTypeParser
         mithraObject.setDefaultTable(reladomoObject.defaultTableName());
         mithraObject.setObjectType(reladomoObject.objectType().getType());
 
-        //todo : validate that only one superclass can be specified
-        SuperClass[] superClasses = reladomoObject.superClass();
-        if (superClasses != null && superClasses.length == 1)
-        {
-            SuperClass superClass = superClasses[0];
-            SuperClassAttributeType superClassAttributeType = new SuperClassAttributeType();
-            superClassAttributeType.setName(superClass.name());
-            superClassAttributeType.setGenerated(superClass.generated());
-            mithraObject.setSuperClass(superClassAttributeType);
-        }
+        setSuperClass(reladomoObject, mithraObject);
+        setUpdateListener(reladomoObject, mithraObject);
+        setDatedTransactionalTemporalDirector(reladomoObject, mithraObject);
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
@@ -670,6 +663,40 @@ public class AnnotationParser implements MithraObjectTypeParser
         mithraObject.setAttributes(attributeTypes);
         mithraObject.setRelationships(relationshipTypes);
         return mithraObject;
+    }
+
+    private void setUpdateListener(ReladomoObject reladomoObject, MithraObject mithraObject)
+    {
+        //todo : validate that only one listener class can be specified
+        Class[] updateListenerClasses = reladomoObject.updateListenerClass();
+        if (updateListenerClasses != null && updateListenerClasses.length == 1)
+        {
+            mithraObject.setUpdateListener(updateListenerClasses[0].getCanonicalName());
+        }
+    }
+
+    private void setDatedTransactionalTemporalDirector(ReladomoObject reladomoObject, MithraObject mithraObject)
+    {
+        //todo : validate that only one listener class can be specified
+        Class[] directorClasses = reladomoObject.datedTransactionalTemporalDirector();
+        if (directorClasses != null && directorClasses.length == 1)
+        {
+            mithraObject.setDatedTransactionalTemporalDirector(directorClasses[0].getCanonicalName());
+        }
+    }
+
+    private void setSuperClass(ReladomoObject reladomoObject, MithraObject mithraObject)
+    {
+        //todo : validate that only one superclass can be specified
+        SuperClass[] superClasses = reladomoObject.superClass();
+        if (superClasses != null && superClasses.length == 1)
+        {
+            SuperClass superClass = superClasses[0];
+            SuperClassAttributeType superClassAttributeType = new SuperClassAttributeType();
+            superClassAttributeType.setName(superClass.name());
+            superClassAttributeType.setGenerated(superClass.generated());
+            mithraObject.setSuperClass(superClassAttributeType);
+        }
     }
 
     private void gatherRelationships(List<RelationshipType> relationshipTypes, List<Element> elements)
