@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
+package com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
+package com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,8 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Property
+public @interface MaxPKStrategy
 {
-    String key();
-    String value();
 }

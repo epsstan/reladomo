@@ -1,7 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ObjectResource;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoObject;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ReladomoObject;
 import com.sun.source.util.Trees;
 
 import javax.lang.model.element.Element;

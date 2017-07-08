@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
+package com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object;
 
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
 import com.gs.fw.common.mithra.generator.metamodel.ForeignKeyType;

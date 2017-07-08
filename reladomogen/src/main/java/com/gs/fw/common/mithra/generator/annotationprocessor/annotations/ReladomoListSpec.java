@@ -1,5 +1,8 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
 
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.InterfaceResource;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,6 +16,7 @@ import java.lang.annotation.Target;
 public @interface ReladomoListSpec
 {
     ObjectResource[] resources();
+    InterfaceResource[] interfaces() default {};
 
     boolean generateInterfaces() default false;
     boolean readOnlyInterfaces() default false;

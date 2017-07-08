@@ -1,6 +1,7 @@
 package com.test1.specs;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
 
 @ReladomoListSpec(
         resources = {

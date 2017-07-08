@@ -1,4 +1,4 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.annotations;
+package com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces;
 
 import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
 
@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ReladomoObject
+public @interface ReladomoInterface
 {
     // class name is inferred from the class to which this annotation is applied
 
@@ -19,7 +19,7 @@ public @interface ReladomoObject
 
     ObjectType.Enums objectType() default ObjectType.Enums.READ_ONLY;
 
-    SuperClass[] superClass() default {};
+    com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SuperClass[] superClass() default {};
 
     Class[] updateListenerClass() default {};
 

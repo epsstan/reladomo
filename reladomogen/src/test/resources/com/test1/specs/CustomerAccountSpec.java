@@ -1,6 +1,8 @@
 package com.test1.specs;
 
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.*;
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
 import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
 import com.gs.fw.common.mithra.generator.metamodel.ObjectType;

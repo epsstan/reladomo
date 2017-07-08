@@ -1,6 +1,6 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
 
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ObjectResource;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
 
 @ReladomoListSpec(
