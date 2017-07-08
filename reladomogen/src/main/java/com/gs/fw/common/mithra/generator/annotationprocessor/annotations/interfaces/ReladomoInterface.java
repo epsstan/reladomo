@@ -15,14 +15,9 @@ public @interface ReladomoInterface
 
     String packageName();
 
-    String defaultTableName();
-
     ObjectType.Enums objectType() default ObjectType.Enums.READ_ONLY;
 
-    com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SuperClass[] superClass() default {};
+    Class[] superInterfaces() default {};
 
-    Class[] updateListenerClass() default {};
-
-    Class[] datedTransactionalTemporalDirector() default {};
-
+    String[] imports() default {};
 }
