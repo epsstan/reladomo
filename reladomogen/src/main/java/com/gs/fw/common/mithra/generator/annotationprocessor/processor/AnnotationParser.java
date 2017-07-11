@@ -645,6 +645,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         mithraObject.setObjectType(reladomoObject.objectType().getType());
 
         setSuperClass(reladomoObject, mithraObject);
+        setSuperClassType(reladomoObject, mithraObject);
         setUpdateListener(reladomoObject, mithraObject);
         setDatedTransactionalTemporalDirector(reladomoObject, mithraObject);
 
@@ -696,6 +697,16 @@ public class AnnotationParser implements MithraObjectTypeParser
             superClassAttributeType.setName(superClass.name());
             superClassAttributeType.setGenerated(superClass.generated());
             mithraObject.setSuperClass(superClassAttributeType);
+        }
+    }
+
+    private void setSuperClassType(ReladomoObject reladomoObject, MithraObject mithraObject)
+    {
+        //todo : validate that only one superclass can be specified
+        SuperClassType.Enums[] superClassTypes = reladomoObject.superClassType();
+        if (superClassTypes != null && superClassTypes.length == 1)
+        {
+            mithraObject.setSuperClassType(superClassTypes[0].getType());
         }
     }
 
