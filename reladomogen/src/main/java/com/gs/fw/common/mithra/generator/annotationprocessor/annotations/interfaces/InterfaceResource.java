@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface InterfaceResource
 {
+    Class name();
+    boolean readOnlyInterfaces() default false;
 }

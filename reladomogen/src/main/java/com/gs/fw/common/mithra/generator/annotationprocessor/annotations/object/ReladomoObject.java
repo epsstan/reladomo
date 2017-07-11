@@ -1,6 +1,7 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object;
 
 import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
+import com.gs.fw.common.mithra.generator.metamodel.SuperClassType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -19,10 +20,14 @@ public @interface ReladomoObject
 
     ObjectType.Enums objectType() default ObjectType.Enums.READ_ONLY;
 
+    SuperClassType.Enums[] superClassType() default {};
+
     SuperClass[] superClass() default {};
 
     Class[] updateListenerClass() default {};
 
     Class[] datedTransactionalTemporalDirector() default {};
+
+    Class[] interfaces() default {};
 
 }

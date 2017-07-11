@@ -3,6 +3,7 @@ package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 import com.gs.fw.common.mithra.generator.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.AsOfAttribute;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Index;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Properties;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
@@ -155,11 +156,11 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private int parseMithraObjects() throws FileNotFoundException
     {
-        final com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource[] objectResources = reladomoListSpec.resources();
+        final ObjectResource[] objectResources = reladomoListSpec.resources();
         chopAndStickResource.resetSerialResource();
         for (int i = 0; i < objectResources.length ; i++)
         {
-            com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource resource = objectResources[i];
+            ObjectResource resource = objectResources[i];
             final ObjectResourceWrapper objectResource = new ObjectResourceWrapper(reladomoListSpec, resource,
                     elementUtils, typeUtils, trees);
             getExecutor().submit(new GeneratorTask(i)
@@ -635,7 +636,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
     {
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ReladomoObject reladomoObject = reladomoObjectSpecDetails.getReladomoObject();
+        ReladomoObject reladomoObject = reladomoObjectSpecDetails.getReladomoObject();
 
         MithraObject mithraObject = new MithraObject();
         mithraObject.setPackageName(reladomoObject.packageName());
@@ -664,7 +665,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return mithraObject;
     }
 
-    private void setUpdateListener(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ReladomoObject reladomoObject, MithraObject mithraObject)
+    private void setUpdateListener(ReladomoObject reladomoObject, MithraObject mithraObject)
     {
         //todo : validate that only one listener class can be specified
         Class[] updateListenerClasses = reladomoObject.updateListenerClass();
@@ -674,7 +675,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    private void setDatedTransactionalTemporalDirector(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ReladomoObject reladomoObject, MithraObject mithraObject)
+    private void setDatedTransactionalTemporalDirector(ReladomoObject reladomoObject, MithraObject mithraObject)
     {
         //todo : validate that only one listener class can be specified
         Class[] directorClasses = reladomoObject.datedTransactionalTemporalDirector();
@@ -684,13 +685,13 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    private void setSuperClass(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ReladomoObject reladomoObject, MithraObject mithraObject)
+    private void setSuperClass(ReladomoObject reladomoObject, MithraObject mithraObject)
     {
         //todo : validate that only one superclass can be specified
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SuperClass[] superClasses = reladomoObject.superClass();
+        SuperClass[] superClasses = reladomoObject.superClass();
         if (superClasses != null && superClasses.length == 1)
         {
-            com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SuperClass superClass = superClasses[0];
+            SuperClass superClass = superClasses[0];
             SuperClassAttributeType superClassAttributeType = new SuperClassAttributeType();
             superClassAttributeType.setName(superClass.name());
             superClassAttributeType.setGenerated(superClass.generated());
@@ -756,9 +757,9 @@ public class AnnotationParser implements MithraObjectTypeParser
     private boolean isAttribute(Element element)
     {
         for (Class clazz : new Class[]{
-                com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.BigDecimalAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteArrayAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.CharAttribute.class,
-                com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.DoubleAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.FloatAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.IntAttribute.class, com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.LongAttribute.class,
-                com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.StringAttribute.class})
+                BigDecimalAttribute.class, ByteArrayAttribute.class, ByteAttribute.class,
+                CharAttribute.class, DoubleAttribute.class, FloatAttribute.class,
+                IntAttribute.class, LongAttribute.class, StringAttribute.class })
         {
             if (element.getAnnotation(clazz) != null )
             {
@@ -770,7 +771,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private boolean isRelationship(Element element)
     {
-        return element.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Relationship.class) != null;
+        return element.getAnnotation(Relationship.class) != null;
     }
 
     private boolean isIndex(Element element)
@@ -822,47 +823,47 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private AttributeType makeTypedAttribute(Element reladomoObjectSpecElement, String name)
     {
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteAttribute byteAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteAttribute.class);
+        ByteAttribute byteAttribute = reladomoObjectSpecElement.getAnnotation(ByteAttribute.class);
         if (byteAttribute != null)
         {
             return makeByteAttribute(byteAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.CharAttribute charAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.CharAttribute.class);
+        CharAttribute charAttribute = reladomoObjectSpecElement.getAnnotation(CharAttribute.class);
         if (charAttribute != null)
         {
             return makeCharAttribute(charAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.IntAttribute intAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.IntAttribute.class);
+        IntAttribute intAttribute = reladomoObjectSpecElement.getAnnotation(IntAttribute.class);
         if (intAttribute != null)
         {
             return makeIntAttribute(intAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.LongAttribute longAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.LongAttribute.class);
+        LongAttribute longAttribute = reladomoObjectSpecElement.getAnnotation(LongAttribute.class);
         if (longAttribute != null)
         {
             return makeLongAttribute(longAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.FloatAttribute floatAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.FloatAttribute.class);
+        FloatAttribute floatAttribute = reladomoObjectSpecElement.getAnnotation(FloatAttribute.class);
         if (floatAttribute != null)
         {
             return makeFloatAttribute(floatAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.DoubleAttribute doubleAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.DoubleAttribute.class);
+        DoubleAttribute doubleAttribute = reladomoObjectSpecElement.getAnnotation(DoubleAttribute.class);
         if (doubleAttribute != null)
         {
             return makeDoubleAttribute(doubleAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.BigDecimalAttribute bigDecimalAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.BigDecimalAttribute.class);
+        BigDecimalAttribute bigDecimalAttribute = reladomoObjectSpecElement.getAnnotation(BigDecimalAttribute.class);
         if (bigDecimalAttribute != null)
         {
             return makeBigDecimalAttribute(bigDecimalAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.StringAttribute stringAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.StringAttribute.class);
+        StringAttribute stringAttribute = reladomoObjectSpecElement.getAnnotation(StringAttribute.class);
         if (stringAttribute != null)
         {
             return makeStringAttribute(stringAttribute, name);
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteArrayAttribute byteArrayAttribute = reladomoObjectSpecElement.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteArrayAttribute.class);
+        ByteArrayAttribute byteArrayAttribute = reladomoObjectSpecElement.getAnnotation(ByteArrayAttribute.class);
         if (byteArrayAttribute != null)
         {
             return makeByteArrayAttribute(byteArrayAttribute, name);
@@ -870,7 +871,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return null;
     }
 
-    private AttributeType makeCharAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.CharAttribute spec, String name)
+    private AttributeType makeCharAttribute(CharAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -888,7 +889,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeByteAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteAttribute spec, String name)
+    private AttributeType makeByteAttribute(ByteAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -906,7 +907,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeByteArrayAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ByteArrayAttribute spec, String name)
+    private AttributeType makeByteArrayAttribute(ByteArrayAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -923,7 +924,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeStringAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.StringAttribute spec, String name)
+    private AttributeType makeStringAttribute(StringAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -946,7 +947,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private void setPrimaryKeyStrategy(Element element, AttributeType attributeType)
     {
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.PrimaryKey primaryKey = element.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.PrimaryKey.class);
+        PrimaryKey primaryKey = element.getAnnotation(PrimaryKey.class);
         if (primaryKey == null)
         {
             attributeType.setPrimaryKey(false);
@@ -963,7 +964,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private boolean addPKStrategy(Element element, AttributeType attributeType)
     {
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SimulatedSequencePKStrategy simulatedSequencePKStrategy = element.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.SimulatedSequencePKStrategy.class);
+        SimulatedSequencePKStrategy simulatedSequencePKStrategy = element.getAnnotation(SimulatedSequencePKStrategy.class);
         if (simulatedSequencePKStrategy != null)
         {
             SimulatedSequenceType simulatedSequenceType = new SimulatedSequenceType();
@@ -978,7 +979,7 @@ public class AnnotationParser implements MithraObjectTypeParser
             attributeType.setPrimaryKeyGeneratorStrategy(PrimaryKeyGeneratorStrategyType.SimulatedSequence);
             return true;
         }
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.MaxPKStrategy maxPKStrategy = element.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.MaxPKStrategy.class);
+        MaxPKStrategy maxPKStrategy = element.getAnnotation(MaxPKStrategy.class);
         if (maxPKStrategy != null)
         {
             attributeType.setPrimaryKeyGeneratorStrategy(PrimaryKeyGeneratorStrategyType.Max);
@@ -987,7 +988,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return false;
     }
 
-    private AttributeType makeIntAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.IntAttribute spec, String name)
+    private AttributeType makeIntAttribute(IntAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -1007,7 +1008,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeLongAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.LongAttribute spec, String name)
+    private AttributeType makeLongAttribute(LongAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -1028,7 +1029,7 @@ public class AnnotationParser implements MithraObjectTypeParser
     }
 
     //((AnnotationInvocationHandler) ((Proxy) spec).getInvocationHandler()).getMemberMethods()[0]
-    private AttributeType makeDoubleAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.DoubleAttribute spec, String name)
+    private AttributeType makeDoubleAttribute(DoubleAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -1047,7 +1048,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeFloatAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.FloatAttribute spec, String name)
+    private AttributeType makeFloatAttribute(FloatAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -1066,7 +1067,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return attributeType;
     }
 
-    private AttributeType makeBigDecimalAttribute(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.BigDecimalAttribute spec, String name)
+    private AttributeType makeBigDecimalAttribute(BigDecimalAttribute spec, String name)
     {
         AttributeType attributeType = new AttributeType();
         //generic attributes
@@ -1108,7 +1109,7 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private RelationshipType makeRelationship(Element element, String name)
     {
-        com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Relationship spec = element.getAnnotation(com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Relationship.class);
+        Relationship spec = element.getAnnotation(Relationship.class);
         Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
         String relatedObject = returnType.asElement().getSimpleName().toString().replaceAll("Spec", "");
 
@@ -1153,7 +1154,7 @@ public class AnnotationParser implements MithraObjectTypeParser
     private List<PropertyType> extractProperties(Properties spec)
     {
         List<PropertyType> propertyTypes = new ArrayList<PropertyType>();
-        for (com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Property property : spec.value())
+        for (Property property : spec.value())
         {
             PropertyType propType = new PropertyType();
             propType.setKey("\"" + property.key() + "\"");

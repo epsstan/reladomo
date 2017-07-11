@@ -16,8 +16,32 @@
 
 package com.gs.fw.common.mithra.generator.metamodel;
 
+
 public class SuperClassType
  extends SuperClassTypeAbstract
 
 {
+    public static final SuperClassType TABLE_PER_SUBLCASS = new SuperClassType().with("table-per-subclass", null);
+    public static final SuperClassType TABLE_ALL_SUBCLASSES = new SuperClassType().with("table-for-all-subclasses", null);
+    public static final SuperClassType TABLE_PER_CLASS = new SuperClassType().with("table-per-class", null);
+
+    public enum Enums
+    {
+        TABLE_PER_SUBLCASS(SuperClassType.TABLE_PER_SUBLCASS),
+        TABLE_ALL_SUBCLASSES(SuperClassType.TABLE_ALL_SUBCLASSES),
+        TABLE_PER_CLASS(SuperClassType.TABLE_PER_CLASS);
+
+        private SuperClassType type;
+
+        Enums(SuperClassType type)
+        {
+
+            this.type = type;
+        }
+
+        public SuperClassType getType()
+        {
+            return type;
+        }
+    }
 }
