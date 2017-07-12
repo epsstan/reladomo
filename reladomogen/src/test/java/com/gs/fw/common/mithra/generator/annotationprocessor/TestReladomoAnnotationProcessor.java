@@ -76,10 +76,60 @@ public class TestReladomoAnnotationProcessor
         return javaFileObjectList;
     }
 
+    private List<JavaFileObject> stageTestFiles(String[] classNames, String packageNameWithSlashes) throws URISyntaxException, IOException
+    {
+        List<JavaFileObject> javaFileObjectList = new ArrayList<JavaFileObject>();
+        for (String name : classNames)
+        {
+            javaFileObjectList.add(addFileToUserSrcDir(
+                    "/" + packageNameWithSlashes + "/" + name + ".java",
+                    packageNameWithSlashes + "/"+ name + ".java",
+                    name)
+            );
+        }
+        return javaFileObjectList;
+    }
+
     private File loadFile(String classpathResourcePath) throws URISyntaxException
     {
         URL resource = TestReladomoAnnotationProcessor.class.getResource(classpathResourcePath);
         return new File(resource.toURI());
+    }
+
+    @Test
+    public void testGenerationWithInterfaces() throws URISyntaxException, IOException
+    {
+        String[] classNames = {"CustomerAccountSpec", "CustomerSpec", "CustomerIdInterfaceSpec",
+                "CustomerDomainListSpec", "ExampleGeneratorsSpec", "TimestampProvider"};
+        List<JavaFileObject> compilationUnits = stageTestFiles(classNames, "com/interfaces/specs");
+
+        ReladomoAnnotationProcessor processor = new ReladomoAnnotationProcessor();
+        TestJavaCompiler compiler = new TestJavaCompiler(compilationUnits, processor, userSrcDir, targetGeneratedSrcDir, targetClassesDir);
+        Boolean compilationStatus = compiler.compile();
+        assertEquals(true, compilationStatus);
+
+        /*
+        String[] files1 = getSortedFileNamesInDir(getUserSrcChildDir(userSrcDir, "com.interfaces.specs"));
+        Assert.assertArrayEquals("mismatch in spec sources",
+                new String[]{
+                        "CustomerAccountSpec.java", "CustomerDomainListSpec.java", "CustomerSpec.java",
+                        "ExampleGeneratorsSpec.java", "TimestampProvider.java"},
+                files1);
+
+        String[] files2 = getSortedFileNamesInDir(getUserSrcChildDir(userSrcDir, "com.test1.domain"));
+        Assert.assertArrayEquals("mismatch in generated sources",
+                new String[]{
+                        "Customer.java", "CustomerAccount.java", "CustomerAccountDatabaseObject.java",
+                        "CustomerAccountList.java", "CustomerDatabaseObject.java", "CustomerList.java"},
+                files2);
+
+        String[] files3 = getSortedFileNamesInDir(getUserSrcChildDir(targetGeneratedSrcDir, "com.test1.domain"));
+        Assert.assertArrayEquals("mismatch in generated sources",
+                new String[]{
+                        "CustomerAbstract.java", "CustomerAccountAbstract.java",
+                        "CustomerAccountData.java", "CustomerAccountDatabaseObjectAbstract.java", "CustomerAccountFinder.java", "CustomerAccountListAbstract.java", "CustomerData.java", "CustomerDatabaseObjectAbstract.java", "CustomerFinder.java", "CustomerListAbstract.java"},
+                files3);
+        */
     }
 
     @Test

@@ -8,7 +8,7 @@ import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
 @ReladomoInterface(
         packageName = "com.examples.reladomogen"
 )
-public interface CustomerInterfaceSpec
+public interface CustomerIdInterfaceSpec
 {
     @InterfaceAttribute
     int customerId();

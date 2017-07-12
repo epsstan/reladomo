@@ -1,5 +1,6 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.InterfaceResource;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.ObjectResource;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.ReladomoListSpec;
 import com.sun.source.tree.AnnotationTree;
@@ -21,6 +22,7 @@ public class ReladomoListSpecWrapper
     private String specName;
     private final Set<String> reladomoListAnnotationArguments;
     private final Map<String, Set<String>> allObjectResourceAnnotationArguments;
+    private final Map<String, Set<String>> allInterfaceResourceAnnotationArguments;
 
     public ReladomoListSpecWrapper(ReladomoListSpec spec, Element element, String specName,
                                    Elements elements, Types typeUtils, Trees trees)
@@ -34,6 +36,7 @@ public class ReladomoListSpecWrapper
 
         this.reladomoListAnnotationArguments = scanner.reladomoListAnnotationArguments;
         this.allObjectResourceAnnotationArguments = scanner.objectResourceAnnotationArguments;
+        this.allInterfaceResourceAnnotationArguments = scanner.interfaceResourceAnnotationArguments;
     }
 
     public String getSpecName()
@@ -44,9 +47,19 @@ public class ReladomoListSpecWrapper
     {
         return spec.resources();
     }
+    public InterfaceResource[] interfaces()
+    {
+        return spec.interfaces();
+    }
+
     public Map<String, Set<String>> getAllObjectResourceAnnotationArguments()
     {
         return allObjectResourceAnnotationArguments;
+    }
+
+    public Map<String, Set<String>> getAllInterfaceResourceAnnotationArguments()
+    {
+        return allInterfaceResourceAnnotationArguments;
     }
 
     boolean generateInterfaces()
@@ -79,6 +92,7 @@ public class ReladomoListSpecWrapper
     {
         private Set<String> reladomoListAnnotationArguments = new HashSet<String>();
         private Map<String, Set<String>> objectResourceAnnotationArguments = new HashMap<String, Set<String>>();
+        private Map<String, Set<String>> interfaceResourceAnnotationArguments = new HashMap<String, Set<String>>();
 
         @Override
         public Object visitAnnotation(AnnotationTree annotationTree, Object o)
@@ -104,6 +118,21 @@ public class ReladomoListSpecWrapper
                     {
                         JCTree.JCExpression argValue = ((JCTree.JCAssign) arg).getExpression();
                         objectResourceAnnotationArguments.put(argValue.toString().replace(".class", ""), resourceArguments);
+                    }
+                }
+            }
+            else if (name.toString().equals(InterfaceResource.class.getSimpleName()))
+            {
+                List<? extends ExpressionTree> arguments = annotationTree.getArguments();
+                Set<String> resourceArguments = new HashSet<String>();
+                for (ExpressionTree arg : arguments)
+                {
+                    String argName = ((JCTree.JCAssign) arg).getVariable().toString();
+                    resourceArguments.add(argName);
+                    if (argName.equals("name"))
+                    {
+                        JCTree.JCExpression argValue = ((JCTree.JCAssign) arg).getExpression();
+                        interfaceResourceAnnotationArguments.put(argValue.toString().replace(".class", ""), resourceArguments);
                     }
                 }
             }

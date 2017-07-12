@@ -1,9 +1,10 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
 import com.gs.fw.common.mithra.generator.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.AsOfAttribute;
-import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Index;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Index;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Properties;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
@@ -101,7 +102,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         return this.mithraEnumerations;
     }
 
-    public Map<String,MithraInterfaceType> getMithraInterfaces()
+    public Map<String, MithraInterfaceType> getMithraInterfaces()
     {
         return mithraInterfaces;
     }
@@ -112,8 +113,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             parseAnnotations();
             return faleClassList;
-        }
-        catch (Throwable e)
+        } catch (Throwable e)
         {
             throw new MithraGeneratorException(e);
         }
@@ -141,16 +141,14 @@ public class AnnotationParser implements MithraObjectTypeParser
             msg = concatParsed(msg, embeddedObjects, "embedded");
             msg = concatParsed(msg, enumerations, "enumeration");
             msg = concatParsed(msg, mithraInterfaceObjects, "mithraInterface");
-            msg += " Mithra objects in "+(System.currentTimeMillis() - start)+" ms.";
+            msg += " Mithra objects in " + (System.currentTimeMillis() - start) + " ms.";
             this.logger.info(msg);
-        }
-        catch (MithraGeneratorParserException e)
+        } catch (MithraGeneratorParserException e)
         {
-           throw new MithraGeneratorException("Unable to parse "+ fileName, e);
-        }
-        catch (IOException e)
+            throw new MithraGeneratorException("Unable to parse " + fileName, e);
+        } catch (IOException e)
         {
-            throw new MithraGeneratorException("Unable to read file "+ fileName, e);
+            throw new MithraGeneratorException("Unable to read file " + fileName, e);
         }
     }
 
@@ -158,7 +156,7 @@ public class AnnotationParser implements MithraObjectTypeParser
     {
         final ObjectResource[] objectResources = reladomoListSpec.resources();
         chopAndStickResource.resetSerialResource();
-        for (int i = 0; i < objectResources.length ; i++)
+        for (int i = 0; i < objectResources.length; i++)
         {
             ObjectResource resource = objectResources[i];
             final ObjectResourceWrapper objectResource = new ObjectResourceWrapper(reladomoListSpec, resource,
@@ -363,6 +361,29 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private int parseMithraInterfaceObjects() throws FileNotFoundException
     {
+        InterfaceResource[] interfaceResources = reladomoListSpec.interfaces();
+        chopAndStickResource.resetSerialResource();
+        for (int i = 0; i < interfaceResources.length; i++)
+        {
+            InterfaceResource resource = interfaceResources[i];
+            final InterfaceResourceWrapper interfaceResource = new InterfaceResourceWrapper(reladomoListSpec, resource, typeUtils);
+            getExecutor().submit(new GeneratorTask(i)
+            {
+                public void run()
+                {
+                    ReladomoInterfaceSpecDetails reladomoInterfaceSpecDetails = interfaceResource.getReladomoInterfaceSpecDetails();
+                    String name = reladomoInterfaceSpecDetails.getName();
+                    MithraInterfaceType mithraObject = processReladomoInterface(interfaceResource, reladomoInterfaceSpecDetails);
+                    if (mithraObject != null)
+                    {
+                        mithraInterfaces.put(name, mithraObject);
+                    }
+                }
+            });
+        }
+        waitForExecutorWithCheck();
+        return interfaceResources.length;
+
         /*
         List<MithraInterfaceResourceType> mithraObjectList = mithraType.getMithraInterfaceResources();
         chopAndStickResource.resetSerialResource();
@@ -382,11 +403,35 @@ public class AnnotationParser implements MithraObjectTypeParser
                 }
             });
         }
-
         waitForExecutorWithCheck();
         return mithraObjectList.size();
         */
-        return 0;
+    }
+
+    private MithraInterfaceType processReladomoInterface(InterfaceResourceWrapper interfaceResource, ReladomoInterfaceSpecDetails reladomoInterfaceSpecDetails)
+    {
+        ReladomoInterface spec = reladomoInterfaceSpecDetails.getReladomoInterface();
+        MithraInterfaceType mithraInterfaceType = new MithraInterfaceType();
+        mithraInterfaceType.setPackageName(spec.packageName());
+        mithraInterfaceType.setReadOnlyInterfaces(interfaceResource.readOnlyInterfaces());
+        mithraInterfaceType.setSourceFileName(reladomoInterfaceSpecDetails.getSpecName());
+
+        List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
+        List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
+        List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
+
+        // todo : maybe convert this to use the visitor pattern ?
+        ElementsByType elementsByType = partitionInterfaceElements(reladomoInterfaceSpecDetails.getEnclosedElements());
+        gatherInterfaceAttributes(asOfAttributeTypes, attributeTypes, elementsByType.attributes);
+        gatherInterfaceRelationships(relationshipTypes, elementsByType.relationships);
+
+        //mithraInterfaceType.setReadOnlyInterfaces();
+        //mithraInterfaceType.setImportedSource();
+        //mithraInterfaceType.setImports();
+        //mithraInterfaceType.setSourceAttribute();
+        //mithraInterfaceType.setSourceFileName();
+        //mithraInterfaceType.setSuperInterfaces();
+        return mithraInterfaceType;
     }
 
     private Object parseMithraType()
@@ -484,7 +529,7 @@ public class AnnotationParser implements MithraObjectTypeParser
     {
         if (count > 0)
         {
-            msg += count + " " +type+", ";
+            msg += count + " " + type + ", ";
         }
         return msg;
     }
@@ -505,10 +550,9 @@ public class AnnotationParser implements MithraObjectTypeParser
             try
             {
                 is.close();
-            }
-            catch (IOException e)
+            } catch (IOException e)
             {
-                throw new MithraGeneratorException("Exception closing InputStream",e);
+                throw new MithraGeneratorException("Exception closing InputStream", e);
             }
         }
     }
@@ -522,12 +566,13 @@ public class AnnotationParser implements MithraObjectTypeParser
     {
         if (executor == null)
         {
-            executor = new AwaitingThreadExecutor(Runtime.getRuntime().availableProcessors()+IO_THREADS, "Mithra Generator");
-            executor.setExceptionHandler(new AutoShutdownThreadExecutor.ExceptionHandler() {
+            executor = new AwaitingThreadExecutor(Runtime.getRuntime().availableProcessors() + IO_THREADS, "Mithra Generator");
+            executor.setExceptionHandler(new AutoShutdownThreadExecutor.ExceptionHandler()
+            {
                 public void handleException(AutoShutdownThreadExecutor executor, Runnable target, Throwable exception)
                 {
                     executor.shutdownNow();
-                    AnnotationParser.this.logger.error("Error in runnable target. Shutting down queue "+exception.getClass().getName()+" :"+exception.getMessage());
+                    AnnotationParser.this.logger.error("Error in runnable target. Shutting down queue " + exception.getClass().getName() + " :" + exception.getMessage());
                     executorError = exception;
                 }
             });
@@ -736,8 +781,7 @@ public class AnnotationParser implements MithraObjectTypeParser
             if (isAsOfAttribute(element))
             {
                 addAsOfAttribute(element, name, asOfAttributeTypes);
-            }
-            else
+            } else
             {
                 addAttribute(element, name, attributeTypes);
             }
@@ -752,14 +796,28 @@ public class AnnotationParser implements MithraObjectTypeParser
             if (isAttribute(element))
             {
                 elementsByType.addAttribute(element);
-            }
-            else if (isRelationship(element))
+            } else if (isRelationship(element))
             {
                 elementsByType.addRelationship(element);
-            }
-            else if (isIndex(element))
+            } else if (isIndex(element))
             {
                 elementsByType.addIndex(element);
+            }
+        }
+        return elementsByType;
+    }
+
+    private ElementsByType partitionInterfaceElements(List<? extends Element> elements)
+    {
+        ElementsByType elementsByType = new ElementsByType();
+        for (Element element : elements)
+        {
+            if (isInterfaceAttribute(element))
+            {
+                elementsByType.addAttribute(element);
+            } else if (isInterfaceRelationship(element))
+            {
+                elementsByType.addRelationship(element);
             }
         }
         return elementsByType;
@@ -770,12 +828,72 @@ public class AnnotationParser implements MithraObjectTypeParser
         for (Class clazz : new Class[]{
                 BigDecimalAttribute.class, ByteArrayAttribute.class, ByteAttribute.class,
                 CharAttribute.class, DoubleAttribute.class, FloatAttribute.class,
-                IntAttribute.class, LongAttribute.class, StringAttribute.class })
+                IntAttribute.class, LongAttribute.class, StringAttribute.class})
         {
-            if (element.getAnnotation(clazz) != null )
+            if (element.getAnnotation(clazz) != null)
             {
                 return true;
             }
+        }
+        return false;
+    }
+
+    private void gatherInterfaceAttributes(List<AsOfAttributeType> asOfAttributeTypes, List<AttributeType> attributeTypes, List<Element> elements)
+    {
+        for (Element element : elements)
+        {
+            String name = element.getSimpleName().toString();
+            if (isInterfaceAsOfAttribute(element))
+            {
+                addAsOfAttribute(element, name, asOfAttributeTypes);
+            } else
+            {
+                addInterfaceAttribute(element, name, attributeTypes);
+            }
+        }
+    }
+
+    private void addInterfaceAttribute(Element element, String name, List<AttributeType> attributeTypes)
+    {
+        InterfaceAttribute spec = element.getAnnotation(InterfaceAttribute.class);
+        AttributeType attributeType = new AttributeType();
+        //generic attributes
+        attributeType.setName(name);
+    }
+
+    private void gatherInterfaceRelationships(List<RelationshipType> relationshipTypes, List<Element> elements)
+    {
+        for (Element element : elements)
+        {
+            String name = element.getSimpleName().toString();
+            relationshipTypes.add(makeRelationship(element, name));
+        }
+    }
+
+
+    private boolean isInterfaceAttribute(Element element)
+    {
+        if (element.getAnnotation(InterfaceAttribute.class) != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isInterfaceRelationship(Element element)
+    {
+        if (element.getAnnotation(InterfaceRelationship.class) != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isInterfaceAsOfAttribute(Element element)
+    {
+        if (element.getAnnotation(InterfaceAsOfAttribute.class) != null)
+        {
+            return true;
         }
         return false;
     }
@@ -817,8 +935,7 @@ public class AnnotationParser implements MithraObjectTypeParser
         if (attributeType == null)
         {
             // todo : generate validation error
-        }
-        else
+        } else
         {
             setPrimaryKeyStrategy(element, attributeType);
             attributeTypes.add(attributeType);

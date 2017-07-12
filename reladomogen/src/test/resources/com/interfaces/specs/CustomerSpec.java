@@ -1,30 +1,34 @@
-package com.gs.fw.common.mithra.generator.annotationprocessor.examples;
+package com.interfaces.specs;
 
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
+import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.*;
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
+import com.gs.fw.common.mithra.generator.metamodel.PrimaryKeyGeneratorStrategyType;
 import com.gs.fw.common.mithra.generator.metamodel.ObjectType;
 
 import java.sql.Timestamp;
 
 @ReladomoObject(
-    packageName = "com.examples.reladomogen",
-    defaultTableName = "CUSTOMER",
-    objectType = ObjectType.Enums.TRANSACTIONAL,
-    interfaces = CustomerIdInterfaceSpec.class
+        packageName = "com.interfaces.domain",
+        defaultTableName = "CUSTOMER",
+        objectType = ObjectType.Enums.TRANSACTIONAL,
+        superClass = @SuperClass(name="com.test1.specs.CustomerSuperClass", generated=false),
+        interfaces = CustomerIdInterfaceSpec.class
 )
 public interface CustomerSpec
 {
     @AsOfAttribute(fromColumnName="FROM_Z", toColumnName="THRU_Z", toIsInclusive = false,
         isProcessingDate = false, futureExpiringRowsExist = true,
-        infinityDate="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.ExampleInfinityTimestampProvider.getInfinityDate()]",
-        defaultIfNotSpecified="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.getInfinityDate()]"
+        infinityDate = "[com.test1.specs.TimestampProvider.getInfinityDate()]",
+        defaultIfNotSpecified="[com.test1.specs.TimestampProvider.getInfinityDate()]"
     )
     Timestamp businessDate();
 
     @AsOfAttribute(fromColumnName="IN_Z", toColumnName="OUT_Z", toIsInclusive = false,
         isProcessingDate = true,
-        infinityDate="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.ExampleInfinityTimestampProvider.getInfinityDate()]",
-        defaultIfNotSpecified="[com.gs.fw.common.mithra.generator.annotationprocessor.examples.getInfinityDate()]"
+        infinityDate = "[com.test1.specs.TimestampProvider.getInfinityDate()]",
+        defaultIfNotSpecified="[com.test1.specs.TimestampProvider.getInfinityDate()]"
     )
     Timestamp processingDate();
 
@@ -37,14 +41,14 @@ public interface CustomerSpec
     String firstName();
 
     @StringAttribute(columnName = "LAST_NAME", maxLength = 200, nullable = true)
-    String lastName();
-
-    @StringAttribute(columnName = "COUNTRY", maxLength = 200, nullable = true)
     @Properties({
             @Property(key = "a1", value = "b1"),
             @Property(key = "a2", value = "b2"),
             @Property(key = "a3", value = "b3"),
     })
+    String lastName();
+
+    @StringAttribute(columnName = "COUNTRY", maxLength = 200, nullable = true)
     String country();
 
     @Relationship(
@@ -55,4 +59,8 @@ public interface CustomerSpec
 
     )
     CustomerAccountSpec accounts();
+
+
+    @Index(unique=true, attributes="firstName, lastName")
+    void index1();
 }
