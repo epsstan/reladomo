@@ -9,12 +9,16 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ObjectResourceWrapper
 {
+    private ReladomoObject reladomoObject;
+    private List<? extends Element> enclosedElements;
+    private String name;
+    private String specName;
     private ObjectResource spec;
-    private ReladomoObjectSpecDetails reladomoObjectSpecDetails;
     private Set<String> annotationArguments = new HashSet<String>();
 
     public ObjectResourceWrapper(ReladomoListSpecWrapper reladomoListSpec, ObjectResource spec, Elements elementUtils, Types typeUtils, Trees trees)
@@ -27,24 +31,37 @@ public class ObjectResourceWrapper
         catch (MirroredTypeException e)
         {
             Element element = typeUtils.asElement(e.getTypeMirror());
-            String specName = element.getSimpleName().toString();
+            this.specName = element.getSimpleName().toString();
             annotationArguments = reladomoListSpec.getAllObjectResourceAnnotationArguments().get(specName);
 
             if (!specName.endsWith("Spec"))
             {
                 throw new IllegalArgumentException("ReladmoObjectSpec class name as to end with 'Spec'. Found name " + specName);
             }
-            this.reladomoObjectSpecDetails = new ReladomoObjectSpecDetails(
-                    specName.replaceAll("Spec", ""),
-                    specName,
-                    element.getAnnotation(ReladomoObject.class),
-                    element.getEnclosedElements());
+            this.name = specName.replaceAll("Spec", "");
+            this.reladomoObject = element.getAnnotation(ReladomoObject.class);
+            this.enclosedElements = element.getEnclosedElements();
         }
     }
 
-    public ReladomoObjectSpecDetails getReladomoObjectSpecDetails()
+    public ReladomoObject getReladomoObject()
     {
-        return reladomoObjectSpecDetails;
+        return reladomoObject;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getSpecName()
+    {
+        return specName;
+    }
+
+    public List<? extends Element> getEnclosedElements()
+    {
+        return enclosedElements;
     }
 
     boolean generateInterfaces()

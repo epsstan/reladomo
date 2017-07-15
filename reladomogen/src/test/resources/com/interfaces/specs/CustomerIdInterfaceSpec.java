@@ -4,6 +4,7 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfa
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.InterfaceRelationship;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfaces.ReladomoInterface;
 import com.gs.fw.common.mithra.generator.metamodel.CardinalityType;
+import java.math.BigDecimal;
 
 @ReladomoInterface(
         packageName = "com.interfaces.domain"

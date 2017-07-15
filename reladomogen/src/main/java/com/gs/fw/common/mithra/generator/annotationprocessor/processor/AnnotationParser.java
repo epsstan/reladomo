@@ -165,11 +165,10 @@ public class AnnotationParser implements MithraObjectTypeParser
             {
                 public void run()
                 {
-                    ReladomoObjectSpecDetails reladomoObjectSpecDetails = objectResource.getReladomoObjectSpecDetails();
-                    MithraObject mithraObject = processReladomoObject(reladomoObjectSpecDetails);
+                    MithraObject mithraObject = processReladomoObject(objectResource);
 
-                    String name = reladomoObjectSpecDetails.getName();
-                    String objectFileName = reladomoObjectSpecDetails.getSpecName();
+                    String name = objectResource.getName();
+                    String objectFileName = objectResource.getSpecName();
 
                     boolean isGenerateInterfaces = !objectResource.isGenerateInterfacesSet() ? reladomoListSpec.isGenerateInterfacesSet() : objectResource.generateInterfaces();
                     boolean enableOffHeap = !objectResource.isEnableOffHeapSet() ? reladomoListSpec.isEnableOffHeapSet() || forceOffHeap : objectResource.enableOffHeap();
@@ -371,9 +370,8 @@ public class AnnotationParser implements MithraObjectTypeParser
             {
                 public void run()
                 {
-                    ReladomoInterfaceSpecDetails reladomoInterfaceSpecDetails = interfaceResource.getReladomoInterfaceSpecDetails();
-                    String name = reladomoInterfaceSpecDetails.getName();
-                    MithraInterfaceType mithraObject = processReladomoInterface(interfaceResource, reladomoInterfaceSpecDetails);
+                    String name = interfaceResource.getName();
+                    MithraInterfaceType mithraObject = processReladomoInterface(interfaceResource);
                     if (mithraObject != null)
                     {
                         mithraInterfaces.put(name, mithraObject);
@@ -408,30 +406,60 @@ public class AnnotationParser implements MithraObjectTypeParser
         */
     }
 
-    private MithraInterfaceType processReladomoInterface(InterfaceResourceWrapper interfaceResource, ReladomoInterfaceSpecDetails reladomoInterfaceSpecDetails)
+    private MithraInterfaceType processReladomoInterface(InterfaceResourceWrapper interfaceResource)
     {
-        ReladomoInterface spec = reladomoInterfaceSpecDetails.getReladomoInterface();
+        ReladomoInterface spec = interfaceResource.getReladomoInterface();
         MithraInterfaceType mithraInterfaceType = new MithraInterfaceType();
         mithraInterfaceType.setPackageName(spec.packageName());
         mithraInterfaceType.setReadOnlyInterfaces(interfaceResource.readOnlyInterfaces());
-        mithraInterfaceType.setSourceFileName(reladomoInterfaceSpecDetails.getSpecName());
+        mithraInterfaceType.setSourceFileName(interfaceResource.getSpecName());
+        mithraInterfaceType.setImportedSource(interfaceResource.getSpecName());
 
-        List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
-        List<AttributeType> attributeTypes = new ArrayList<AttributeType>();
-        List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
+        setImports(interfaceResource, mithraInterfaceType);
+        setSuperInterfaces(interfaceResource, mithraInterfaceType);
+
+        List<AsOfAttributeInterfaceType> asOfAttributeTypes = new ArrayList<AsOfAttributeInterfaceType>();
+        List<AttributeInterfaceType> attributeTypes = new ArrayList<AttributeInterfaceType>();
+        List<RelationshipInterfaceType> relationshipTypes = new ArrayList<RelationshipInterfaceType>();
 
         // todo : maybe convert this to use the visitor pattern ?
-        ElementsByType elementsByType = partitionInterfaceElements(reladomoInterfaceSpecDetails.getEnclosedElements());
+        ElementsByType elementsByType = partitionInterfaceElements(interfaceResource.getEnclosedElements());
         gatherInterfaceAttributes(asOfAttributeTypes, attributeTypes, elementsByType.attributes);
         gatherInterfaceRelationships(relationshipTypes, elementsByType.relationships);
 
-        //mithraInterfaceType.setReadOnlyInterfaces();
-        //mithraInterfaceType.setImportedSource();
-        //mithraInterfaceType.setImports();
-        //mithraInterfaceType.setSourceAttribute();
-        //mithraInterfaceType.setSourceFileName();
-        //mithraInterfaceType.setSuperInterfaces();
+        setInterfaceSourceAttribute(mithraInterfaceType, elementsByType);
+
         return mithraInterfaceType;
+    }
+
+    private void setInterfaceSourceAttribute(MithraInterfaceType mithraInterfaceType, ElementsByType elementsByType)
+    {
+        Element element = elementsByType.sourceAttributes.get(0);
+        SourceAttributeInterfaceType sourceAttributeInterfaceType = makeInterfaceSourceAttribute(element, element.getSimpleName().toString());
+        mithraInterfaceType.setSourceAttribute(sourceAttributeInterfaceType);
+    }
+
+    private void setSuperInterfaces(InterfaceResourceWrapper interfaceResource, MithraInterfaceType mithraInterfaceType)
+    {
+        Class[] superInterfaces = interfaceResource.superInterfaces();
+        if (superInterfaces != null)
+        {
+            List<String> superInterfaceNames = new ArrayList<String>();
+            for (Class clazz : superInterfaces)
+            {
+                superInterfaceNames.add(clazz.getSimpleName());
+            }
+            mithraInterfaceType.setSuperInterfaces(superInterfaceNames);
+        }
+    }
+
+    private void setImports(InterfaceResourceWrapper interfaceResource, MithraInterfaceType mithraInterfaceType)
+    {
+        String[] imports = interfaceResource.imports();
+        if (imports != null)
+        {
+            mithraInterfaceType.setImports(Arrays.asList(imports));
+        }
     }
 
     private Object parseMithraType()
@@ -652,15 +680,22 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     static class ElementsByType
     {
+        final List<Element> sourceAttributes;
         final List<Element> attributes;
         final List<Element> relationships;
         final List<Element> indices;
 
         public ElementsByType()
         {
+            this.sourceAttributes = new ArrayList<Element>();
             this.attributes = new ArrayList<Element>();
             this.relationships = new ArrayList<Element>();
             this.indices = new ArrayList<Element>();
+        }
+
+        public void addSourceAttribute(Element element)
+        {
+            this.sourceAttributes.add(element);
         }
 
         public void addAttribute(Element element)
@@ -679,13 +714,13 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
     }
 
-    private MithraObject processReladomoObject(ReladomoObjectSpecDetails reladomoObjectSpecDetails)
+    private MithraObject processReladomoObject(ObjectResourceWrapper objectResource)
     {
-        ReladomoObject reladomoObject = reladomoObjectSpecDetails.getReladomoObject();
+        ReladomoObject reladomoObject = objectResource.getReladomoObject();
 
         MithraObject mithraObject = new MithraObject();
         mithraObject.setPackageName(reladomoObject.packageName());
-        mithraObject.setClassName(reladomoObjectSpecDetails.getName());
+        mithraObject.setClassName(objectResource.getName());
         mithraObject.setDefaultTable(reladomoObject.defaultTableName());
         mithraObject.setObjectType(reladomoObject.objectType().getType());
 
@@ -699,8 +734,9 @@ public class AnnotationParser implements MithraObjectTypeParser
         List<RelationshipType> relationshipTypes = new ArrayList<RelationshipType>();
         List<IndexType> indexTypes = new ArrayList<IndexType>();
 
+        // todo : add source attribute
         // todo : maybe convert this to use the visitor pattern ?
-        ElementsByType elementsByType = partitionElements(reladomoObjectSpecDetails.getEnclosedElements());
+        ElementsByType elementsByType = partitionElements(objectResource.getEnclosedElements());
         gatherAttributes(asOfAttributeTypes, attributeTypes, elementsByType.attributes);
         gatherRelationships(relationshipTypes, elementsByType.relationships);
         gatherIndices(indexTypes, elementsByType.indices);
@@ -796,28 +832,14 @@ public class AnnotationParser implements MithraObjectTypeParser
             if (isAttribute(element))
             {
                 elementsByType.addAttribute(element);
-            } else if (isRelationship(element))
+            }
+            else if (isRelationship(element))
             {
                 elementsByType.addRelationship(element);
-            } else if (isIndex(element))
+            }
+            else if (isIndex(element))
             {
                 elementsByType.addIndex(element);
-            }
-        }
-        return elementsByType;
-    }
-
-    private ElementsByType partitionInterfaceElements(List<? extends Element> elements)
-    {
-        ElementsByType elementsByType = new ElementsByType();
-        for (Element element : elements)
-        {
-            if (isInterfaceAttribute(element))
-            {
-                elementsByType.addAttribute(element);
-            } else if (isInterfaceRelationship(element))
-            {
-                elementsByType.addRelationship(element);
             }
         }
         return elementsByType;
@@ -838,64 +860,130 @@ public class AnnotationParser implements MithraObjectTypeParser
         return false;
     }
 
-    private void gatherInterfaceAttributes(List<AsOfAttributeType> asOfAttributeTypes, List<AttributeType> attributeTypes, List<Element> elements)
+    private ElementsByType partitionInterfaceElements(List<? extends Element> elements)
+    {
+        ElementsByType elementsByType = new ElementsByType();
+        for (Element element : elements)
+        {
+            if (isInterfaceAttribute(element))
+            {
+                elementsByType.addAttribute(element);
+            }
+            else if (isInterfaceRelationship(element))
+            {
+                elementsByType.addRelationship(element);
+            }
+            else if (isInterfaceSourceAttribute(element))
+            {
+                elementsByType.addSourceAttribute(element);
+            }
+        }
+        return elementsByType;
+    }
+
+    private void gatherInterfaceAttributes(List<AsOfAttributeInterfaceType> asOfAttributeTypes, List<AttributeInterfaceType> attributeTypes, List<Element> elements)
     {
         for (Element element : elements)
         {
             String name = element.getSimpleName().toString();
             if (isInterfaceAsOfAttribute(element))
             {
-                addAsOfAttribute(element, name, asOfAttributeTypes);
-            } else
+                addInterfaceAsOfAttribute(element, name, asOfAttributeTypes);
+            }
+            else if (isInterfaceAttribute(element))
             {
                 addInterfaceAttribute(element, name, attributeTypes);
             }
         }
     }
 
-    private void addInterfaceAttribute(Element element, String name, List<AttributeType> attributeTypes)
+    private SourceAttributeInterfaceType makeInterfaceSourceAttribute(Element element, String name)
     {
-        InterfaceAttribute spec = element.getAnnotation(InterfaceAttribute.class);
-        AttributeType attributeType = new AttributeType();
-        //generic attributes
-        attributeType.setName(name);
+        InterfaceSourceAttribute spec = element.getAnnotation(InterfaceSourceAttribute.class);
+        SourceAttributeInterfaceType sourceAttributeInterfaceType = new SourceAttributeInterfaceType();
+        Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
+        String typeName = returnType.toString();
+        typeName = typeName.substring(typeName.lastIndexOf(".")+1);
+        sourceAttributeInterfaceType.setName(name);
+        sourceAttributeInterfaceType.setJavaType(typeName);
+        return sourceAttributeInterfaceType;
     }
 
-    private void gatherInterfaceRelationships(List<RelationshipType> relationshipTypes, List<Element> elements)
+    private void addInterfaceAsOfAttribute(Element element, String name, List<AsOfAttributeInterfaceType> asOfAttributeTypes)
+    {
+        InterfaceAsOfAttribute asOfAttribute = element.getAnnotation(InterfaceAsOfAttribute.class);
+        if (asOfAttribute != null)
+        {
+            AsOfAttributeInterfaceType attributeType = makeInterfaceAsOfAttribute(asOfAttribute, name);
+            asOfAttributeTypes.add(attributeType);
+        }
+    }
+
+    private AsOfAttributeInterfaceType makeInterfaceAsOfAttribute(InterfaceAsOfAttribute spec, String name)
+    {
+        AsOfAttributeInterfaceType asOfAttributeType = new AsOfAttributeInterfaceType();
+        asOfAttributeType.setName(name);
+        asOfAttributeType.setInfinityDate(spec.infinityDate());
+        asOfAttributeType.setInfinityIsNull(spec.infinityIsNull());
+        asOfAttributeType.setIsProcessingDate(spec.isProcessingDate());
+        asOfAttributeType.setToIsInclusive(spec.toIsInclusive());
+        asOfAttributeType.setTimezoneConversion(spec.timezoneConversion().getType());
+        return asOfAttributeType;
+    }
+
+    private void addInterfaceAttribute(Element element, String name, List<AttributeInterfaceType> attributeTypes)
+    {
+        InterfaceAttribute spec = element.getAnnotation(InterfaceAttribute.class);
+        Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
+        AttributeInterfaceType attributeType = new AttributeInterfaceType();
+        attributeType.setName(name);
+        String typeName = returnType.toString();
+        typeName = typeName.substring(typeName.lastIndexOf(".")+1);
+        attributeType.setJavaType(typeName);
+        attributeTypes.add(attributeType);
+    }
+
+    private void gatherInterfaceRelationships(List<RelationshipInterfaceType> relationshipTypes, List<Element> elements)
     {
         for (Element element : elements)
         {
             String name = element.getSimpleName().toString();
-            relationshipTypes.add(makeRelationship(element, name));
+            relationshipTypes.add(makeInterfaceRelationship(element, name));
         }
     }
 
+    private RelationshipInterfaceType makeInterfaceRelationship(Element element, String name)
+    {
+        InterfaceRelationship spec = element.getAnnotation(InterfaceRelationship.class);
+        Type returnType = ((Symbol.MethodSymbol) element).getReturnType();
+        String relatedObject = returnType.asElement().getSimpleName().toString().replaceAll("Spec", "");
+
+        RelationshipInterfaceType relationshipInterfaceType = new RelationshipInterfaceType();
+        relationshipInterfaceType.setName(name);
+        relationshipInterfaceType.setCardinality(spec.cardinality().getType());
+        relationshipInterfaceType.setParameters(spec.parameters());
+        relationshipInterfaceType.setRelatedObject(relatedObject);
+        return relationshipInterfaceType;
+    }
 
     private boolean isInterfaceAttribute(Element element)
     {
-        if (element.getAnnotation(InterfaceAttribute.class) != null)
-        {
-            return true;
-        }
-        return false;
+        return element.getAnnotation(InterfaceAttribute.class) != null;
     }
 
     private boolean isInterfaceRelationship(Element element)
     {
-        if (element.getAnnotation(InterfaceRelationship.class) != null)
-        {
-            return true;
-        }
-        return false;
+        return element.getAnnotation(InterfaceRelationship.class) != null;
     }
 
     private boolean isInterfaceAsOfAttribute(Element element)
     {
-        if (element.getAnnotation(InterfaceAsOfAttribute.class) != null)
-        {
-            return true;
-        }
-        return false;
+        return element.getAnnotation(InterfaceAsOfAttribute.class) != null;
+    }
+
+    private boolean isInterfaceSourceAttribute(Element element)
+    {
+        return element.getAnnotation(InterfaceSourceAttribute.class) != null;
     }
 
     private boolean isRelationship(Element element)
