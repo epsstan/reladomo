@@ -381,29 +381,6 @@ public class AnnotationParser implements MithraObjectTypeParser
         }
         waitForExecutorWithCheck();
         return interfaceResources.length;
-
-        /*
-        List<MithraInterfaceResourceType> mithraObjectList = mithraType.getMithraInterfaceResources();
-        chopAndStickResource.resetSerialResource();
-        for (int i = 0; i < mithraObjectList.size(); i++)
-        {
-            final MithraInterfaceResourceType mithraObjectResourceType = mithraObjectList.get(i);
-            final String objectName = mithraObjectResourceType.getName();
-            getExecutor().submit(new GeneratorTask(i)
-            {
-                public void run()
-                {
-                    MithraInterfaceType mithraObject = parseMithraInterfaceType(objectName, mithraInterfaces, fileProvider, this, mithraObjectResourceType.isReadOnlyInterfaces(), importSource);
-                    if (mithraObject != null)
-                    {
-                        mithraInterfaces.put(mithraObjectResourceType.getName(), mithraObject);
-                    }
-                }
-            });
-        }
-        waitForExecutorWithCheck();
-        return mithraObjectList.size();
-        */
     }
 
     private MithraInterfaceType processReladomoInterface(InterfaceResourceWrapper interfaceResource)
@@ -697,17 +674,14 @@ public class AnnotationParser implements MithraObjectTypeParser
         {
             this.sourceAttributes.add(element);
         }
-
         public void addAttribute(Element element)
         {
             this.attributes.add(element);
         }
-
         public void addRelationship(Element element)
         {
             this.relationships.add(element);
         }
-
         public void addIndex(Element element)
         {
             this.indices.add(element);
