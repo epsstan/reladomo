@@ -28,7 +28,7 @@ public class CandidateFile
     public File fullPath(File dir)
     {
         String withSlashes = packageName.replaceAll("\\.", File.separator);
-        String child = withSlashes + File.separatorChar + className + ".java";
+        String child = withSlashes + File.separatorChar + className;
         return new File(dir, child);
     }
 }
