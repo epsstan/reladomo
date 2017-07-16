@@ -1,9 +1,11 @@
 package com.gs.fw.common.mithra.generator.annotationprocessor.processor;
 
-import com.gs.fw.common.mithra.generator.writer.GeneratedFileManager;
+
+import com.gs.fw.common.mithra.generator.filesystem.GeneratedFileManager;
 
 import javax.annotation.processing.Filer;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -54,16 +56,33 @@ public class AnnotationProcessorFileManager implements GeneratedFileManager
         }
     }
 
+    @Override
+    public byte[] readFileInGeneratedDir(String relativePath) throws IOException
+    {
+        return new byte[0];
+    }
+
     private GeneratedFile createFile(String packageName, String className, String fileSuffix, byte[] fileData) throws IOException
     {
         //todo : fix / in package name at call site
         String fixedPackageName = packageName.replaceAll("/", ".");
-        String fileName = fixedPackageName + "." + className + fileSuffix;
-        JavaFileObject sourceFile = filer.createSourceFile(fileName);
-        Writer writer = sourceFile.openWriter();
-        writer.write(new String(fileData));
-        writer.close();
-        return new GeneratedFile(packageName, className + fileSuffix, sourceFile.toUri());
+        String fixedClassName = className.replaceAll("\\.", "");
+        String fixedFileSuffix = fileSuffix.replaceAll("\\.java", "");
+        String fileName = fixedPackageName.isEmpty() ? fixedClassName + fixedFileSuffix: fixedPackageName + "." + fixedClassName + fixedFileSuffix;
+
+        if (!fileSuffix.contains(".log"))
+        {
+            JavaFileObject sourceFile = filer.createSourceFile(fileName);
+            Writer writer = sourceFile.openWriter();
+            writer.write(new String(fileData));
+            writer.close();
+            return new GeneratedFile(packageName, className + fileSuffix, sourceFile.toUri());
+        }
+        else
+        {
+            filer.createResource(StandardLocation.CLASS_OUTPUT, "", fileName);
+            return null;
+        }
     }
 
     private void createFileIfNotInUserSrcDir(String packageName, String className, String fileSuffix, byte[] fileData) throws IOException

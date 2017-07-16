@@ -17,7 +17,7 @@
 
 package com.gs.fw.common.mithra.generator;
 
-import com.gs.fw.common.mithra.generator.writer.GeneratedFileManager;
+import com.gs.fw.common.mithra.generator.filesystem.GeneratedFileManager;
 import org.apache.tools.ant.BuildException;
 
 import java.io.FileNotFoundException;

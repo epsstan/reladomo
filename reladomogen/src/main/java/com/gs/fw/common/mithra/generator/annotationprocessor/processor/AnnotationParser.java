@@ -6,6 +6,8 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.*;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Index;
 import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.object.Properties;
+import com.gs.fw.common.mithra.generator.filesystem.FauxFile;
+import com.gs.fw.common.mithra.generator.filesystem.FauxFileSystem;
 import com.gs.fw.common.mithra.generator.metamodel.*;
 import com.gs.fw.common.mithra.generator.util.*;
 import com.sun.source.util.Trees;
@@ -28,7 +30,7 @@ import static org.javacc.parser.JavaCCGlobals.fileName;
 
 public class AnnotationParser implements MithraObjectTypeParser
 {
-    private final File faleClassList;
+    private final File fakeClassList;
     private final Trees trees;
     private CRC32 crc32 = new CRC32();
 
@@ -60,13 +62,14 @@ public class AnnotationParser implements MithraObjectTypeParser
     private Types typeUtils;
     private Elements elementUtils;
     private ReladomoListSpecWrapper reladomoListSpec;
+    private FauxFileSystem fauxFileSystem;
 
     public AnnotationParser(Types typeUtils, Elements elementUtils, Trees trees, ReladomoListSpecWrapper reladomoListSpec, File fakeClassList)
     {
         this.typeUtils = typeUtils;
         this.elementUtils = elementUtils;
         this.reladomoListSpec = reladomoListSpec;
-        this.faleClassList = fakeClassList;
+        this.fakeClassList = fakeClassList;
         this.trees = trees;
     }
 
@@ -87,6 +90,12 @@ public class AnnotationParser implements MithraObjectTypeParser
         this.defaultFinalGetters = defaultFinalGetters;
     }
 
+    @Override
+    public void setFauxFileSystem(FauxFileSystem fauxFileSystem)
+    {
+        this.fauxFileSystem = fauxFileSystem;
+    }
+
     public Map<String, MithraObjectTypeWrapper> getMithraObjects()
     {
         return this.mithraObjects;
@@ -102,17 +111,24 @@ public class AnnotationParser implements MithraObjectTypeParser
         return this.mithraEnumerations;
     }
 
+    @Override
+    public String getChecksum()
+    {
+        return null;
+    }
+
     public Map<String, MithraInterfaceType> getMithraInterfaces()
     {
         return mithraInterfaces;
     }
 
-    public File parse() throws MithraGeneratorException
+    public String parse() throws MithraGeneratorException
     {
         try
         {
             parseAnnotations();
-            return faleClassList;
+            FauxFile file = this.fauxFileSystem.newFile(fakeClassList.getPath());
+            return file.getPath();
         } catch (Throwable e)
         {
             throw new MithraGeneratorException(e);
@@ -411,9 +427,12 @@ public class AnnotationParser implements MithraObjectTypeParser
 
     private void setInterfaceSourceAttribute(MithraInterfaceType mithraInterfaceType, ElementsByType elementsByType)
     {
-        Element element = elementsByType.sourceAttributes.get(0);
-        SourceAttributeInterfaceType sourceAttributeInterfaceType = makeInterfaceSourceAttribute(element, element.getSimpleName().toString());
-        mithraInterfaceType.setSourceAttribute(sourceAttributeInterfaceType);
+        if (!elementsByType.sourceAttributes.isEmpty())
+        {
+            Element element = elementsByType.sourceAttributes.get(0);
+            SourceAttributeInterfaceType sourceAttributeInterfaceType = makeInterfaceSourceAttribute(element, element.getSimpleName().toString());
+            mithraInterfaceType.setSourceAttribute(sourceAttributeInterfaceType);
+        }
     }
 
     private void setSuperInterfaces(InterfaceResourceWrapper interfaceResource, MithraInterfaceType mithraInterfaceType)
