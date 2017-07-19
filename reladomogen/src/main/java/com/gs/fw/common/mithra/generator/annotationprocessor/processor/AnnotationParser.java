@@ -181,7 +181,6 @@ public class AnnotationParser implements MithraObjectTypeParser
                 public void run()
                 {
                     MithraObject mithraObject = builder.buildReladomoObject(objectResource);
-
                     String name = objectResource.getName();
                     String objectFileName = objectResource.getSpecName();
 

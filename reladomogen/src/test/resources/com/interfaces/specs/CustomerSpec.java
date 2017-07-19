@@ -14,7 +14,7 @@ import java.sql.Timestamp;
         defaultTableName = "CUSTOMER",
         objectType = ObjectType.Enums.TRANSACTIONAL,
         superClass = @SuperClass(name="com.test1.specs.CustomerSuperClass", generated=false),
-        interfaces = CustomerIdInterfaceSpec.class
+        interfaces = {CustomerIdInterfaceSpec.class, CustomerId2InterfaceSpec.class}
 )
 public interface CustomerSpec
 {

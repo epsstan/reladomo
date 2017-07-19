@@ -100,6 +100,7 @@ public class TestReladomoAnnotationProcessor
     public void testGenerationWithInterfaces() throws URISyntaxException, IOException
     {
         String[] classNames = {"CustomerAccountSpec", "CustomerSpec", "CustomerIdInterfaceSpec",
+                "CustomerId2InterfaceSpec",
                 "CustomerDomainListSpec", "ExampleGeneratorsSpec", "TimestampProvider"};
         List<JavaFileObject> compilationUnits = stageTestFiles(classNames, "com/interfaces/specs");
 

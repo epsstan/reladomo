@@ -10,7 +10,8 @@ import com.gs.fw.common.mithra.generator.annotationprocessor.annotations.interfa
                 @ObjectResource(name = CustomerAccountSpec.class, replicated = false, enableOffHeap = false)
         },
         interfaces = {
-                @InterfaceResource(name = CustomerIdInterfaceSpec.class, readOnlyInterfaces = false)
+                @InterfaceResource(name = CustomerIdInterfaceSpec.class, readOnlyInterfaces = false),
+                @InterfaceResource(name = CustomerId2InterfaceSpec.class, readOnlyInterfaces = false)
         }
 )
 public class CustomerDomainListSpec

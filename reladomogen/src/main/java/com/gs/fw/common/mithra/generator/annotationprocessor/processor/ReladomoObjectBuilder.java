@@ -25,6 +25,7 @@ public class ReladomoObjectBuilder
         setSuperClassType(reladomoObject, mithraObject);
         setUpdateListener(reladomoObject, mithraObject);
         setDatedTransactionalTemporalDirector(reladomoObject, mithraObject);
+        mithraObject.setMithraInterfaces(objectResource.getInterfaceClassNames() );
 
         List<AsOfAttributeType> asOfAttributeTypes = new ArrayList<AsOfAttributeType>();
         List<AttributeType> attributeTypes = new ArrayList<AttributeType>();

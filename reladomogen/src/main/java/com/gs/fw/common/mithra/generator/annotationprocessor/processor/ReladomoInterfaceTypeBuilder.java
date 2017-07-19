@@ -17,10 +17,11 @@ public class ReladomoInterfaceTypeBuilder
         ReladomoInterface spec = interfaceResource.getReladomoInterface();
         MithraInterfaceType mithraInterfaceType = new MithraInterfaceType();
         mithraInterfaceType.setPackageName(spec.packageName());
+        mithraInterfaceType.setClassName(interfaceResource.getName());
         mithraInterfaceType.setReadOnlyInterfaces(interfaceResource.readOnlyInterfaces());
         mithraInterfaceType.setSourceFileName(interfaceResource.getSpecName());
-        mithraInterfaceType.setImportedSource(interfaceResource.getSpecName());
-
+        //todo : handle isImported
+        //mithraInterfaceType.setImportedSource(interfaceResource.getSpecName());
         setImports(interfaceResource, mithraInterfaceType);
         setSuperInterfaces(interfaceResource, mithraInterfaceType);
 
